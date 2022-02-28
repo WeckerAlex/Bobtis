@@ -9,19 +9,17 @@
     tools:context=".MainActivity"
     tools:ignore="HardcodedText">
 <androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-
     <LinearLayout
         android:id="@+id/titleBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
 
         <Button
@@ -29,15 +27,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Button" />
+            android:text="Previous" />
 
         <TextView
             android:id="@+id/DayTV"
 
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:gravity="center"
             android:text="Day"
             app:layout_constraintBottom_toTopOf="@id/timetableLayout"
             app:layout_constraintStart_toStartOf="parent"
@@ -45,94 +43,139 @@
 
 
         </TextView>
+
         <Button
             android:id="@+id/buttonNext"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Button" />
+            android:minWidth="32dp"
+            android:text="Next" />
     </LinearLayout>
 
 
-    <LinearLayout
-        android:id="@+id/timetableLayout"
-        android:layout_width="0dp"
+    <ScrollView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:baselineAligned="false"
-        android:gravity="fill"
-        android:orientation="horizontal"
+        android:background="#2A3F8A"
+        android:fillViewport="false"
+        android:minHeight="600dp"
+        app:layout_constrainedHeight="false"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleBar">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleBar">
 
         <LinearLayout
-            android:id="@+id/TLDay1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:id="@+id/timetableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="2400dp"
+            android:baselineAligned="false"
+            android:gravity="fill"
+            android:orientation="horizontal">
 
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="0"
-                android:background="@drawable/coursebackground"
-                android:backgroundTint="#D31212"
-                android:gravity="center_horizontal">
+            <LinearLayout
+                android:id="@+id/legend"
+                android:layout_width="50dp"
+                android:layout_height="2400dp"
+                android:orientation="vertical"></LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/TVClass"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:backgroundTint="#00FFFFFF"
-                        android:gravity="center"
-                        android:text="B2IN" />
-
-                    <TextView
-                        android:id="@+id/TVBranch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="PROJE" />
-                </LinearLayout>
+            <FrameLayout
+                android:id="@+id/TLDay1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/coursebackground"
+                    android:backgroundTint="#D31212"
+                    android:gravity="clip_horizontal"
+                    android:scaleY="1">
 
-                    <TextView
-                        android:id="@+id/TVteacher"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="BOUCH" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/TVRoom"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="SC-03" />
+                        <TextView
+                            android:id="@+id/TVClass"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="#00FFFFFF"
+                            android:gravity="center"
+                            android:lines="1"
+                            android:text="B2IN" />
+
+                        <TextView
+                            android:id="@+id/TVBranch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:lines="1"
+                            android:singleLine="false"
+                            android:text="PROJE" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/TVteacher"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:lines="1"
+                            android:text="BOUCH" />
+
+                        <TextView
+                            android:id="@+id/TVRoom"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:lines="1"
+                            android:text="SC-03" />
+                    </LinearLayout>
+
                 </LinearLayout>
 
-            </TableRow>
+            </FrameLayout>
 
-            <ListView
-                android:id="@+id/coursesList"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="5" />
+            <FrameLayout
+                android:id="@+id/TLDay2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical" />
+
+            <FrameLayout
+                android:id="@+id/TLDay3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical" />
+
+            <FrameLayout
+                android:id="@+id/TLDay4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical" />
+
+            <FrameLayout
+                android:id="@+id/TLDay5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical" />
 
         </LinearLayout>
-
-    </LinearLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView

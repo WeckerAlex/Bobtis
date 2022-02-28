@@ -5,22 +5,19 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
-import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.google.android.material.internal.NavigationMenu;
 import com.google.android.material.navigation.NavigationView;
-
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -31,8 +28,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,13 +38,19 @@ public class MainActivity extends AppCompatActivity {
     public ActionBarDrawerToggle actionBarDrawerToggle;
     private NavigationView navigationView;
     private String user = "sdg";
-    private String pass = "esfg"
+    private String pass = "esfg";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        drawTimetable();
+        setTitlebar();
+        initNavbar();
+        //new ApiCall().execute("login");
+    }
 
+    protected void initNavbar(){
         // drawer layout instance to toggle the menu icon to open
         // drawer and back button to close drawer
         drawerLayout = findViewById(R.id.my_drawer_layout);
@@ -67,53 +68,87 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                System.out.println(item.getTitle());
+                switch (item.toString()){
+                    case "Bobtis": {
+
+                    }
+                    case "Settings":{
+                        goToActivity(Timetable.class);
+                    }
+                    default:{
+                        System.out.println(item.toString());
+                    }
+                }
                 return false;
             }
         });
-
-        drawTimetable();
-        initWidgets();
-        new ApiCall().execute("login");
+    }
+    public void goToActivity(Class targetClass){
+        Intent switchActivityIntent = new Intent(this, targetClass);
+        startActivity(switchActivityIntent);
     }
 
-    private void initWidgets() {
+    private void setTitlebar() {
 //        monthDayText = findViewById(R.id.monthDayText);
 //        dayOfWeekTV = findViewById(R.id.dayOfWeekTV);
 //        hourListView = findViewById(R.id.hourListView);
     }
 
     protected void drawTimetable(){
+        LinearLayout legend = findViewById(R.id.legend);
+        for (int i = 0;i<24;i++){
+            TextView tw = new TextView(this);
+            tw.setText(i+":00"+"\n-\n"+(i+1)+":00");
+            tw.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(50, 100);
+            params.weight = 1f;
+            tw.setLines(3);
+            tw.setLayoutParams(params);
+            legend.addView(tw);
+        }
+//        drawEvent(R.id.TLDay1,1000,"#D31282","B2IN","BOUCH","PROJE","SC-02",1000);
+//        drawEvent(R.id.TLDay2,500,"#F31212","B2IN","BOUCH","PROJE","SC-03",600);
+//        drawEvent(R.id.TLDay2,500,"#131212","B2IN","BOUCH","PROJE","SC-03",0);
+//        drawEvent(R.id.TLDay3,700,"#D15212","B2IN","BOUCH","TEMPL","SC-03",500);
+//        drawEvent(R.id.TLDay4,200,"#581212","B1IN","FISRO","PROJE","SC-03",900);
+//        drawEvent(R.id.TLDay5,200,"#F31412","B2IN","BOUCH","PROJE","SC-01",300);
+        drawEvent(R.id.TLDay1,600,"#D31282","B2IN","BOUCH","PROJE","SC-02",0);
+        drawEvent(R.id.TLDay2,1200,"#F31212","B2IN","BOUCH","PROJE","SC-03",0);
+        drawEvent(R.id.TLDay3,1800,"#131212","B2IN","BOUCH","PROJE","SC-03",0);
+        drawEvent(R.id.TLDay4,2000,"#D15212","B2IN","BOUCH","TEMPL","SC-03",0);
+        drawEvent(R.id.TLDay5,2050,"#581212","B1IN","FISRO","PROJE","SC-03",0);
+        drawEvent(R.id.TLDay1,2000,"#F31412","B2IN","BOUCH","PROJE","SC-01",0);
+    }
+
+    protected void drawEvent(int view,int height,String color,String classText,String teacherAbb,String branchName,String roomAbb,int offset){
         //the layout on which you are working
-        LinearLayout day1Layout = (LinearLayout) findViewById(R.id.TLDay1);
+        FrameLayout day1Layout = (FrameLayout) findViewById(view);
 
         //create new entry
-        TableRow tr = new TableRow(this);
-        tr.setGravity(Gravity.CLIP_HORIZONTAL);
-        tr.setBackgroundResource(R.drawable.coursebackground);
-        tr.getBackground().setTint(Color.parseColor("#D31212"));
+        LinearLayout mainLayout = new LinearLayout(this);
+        mainLayout.setGravity(Gravity.CLIP_HORIZONTAL);
+        mainLayout.setBackgroundResource(R.drawable.coursebackground);
+        mainLayout.getBackground().setTint(Color.parseColor(color));
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, height);
+        layoutParams.topMargin = offset;
+        mainLayout.setLayoutParams(layoutParams);
+
 
         LinearLayout ln1 = new LinearLayout(this);
-        ln1.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT));
-        TextView twclass = createTextView("twclass");
-        TextView twbranch = createTextView("twbranch");
+        ln1.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT,1f));
         ln1.setOrientation(LinearLayout.VERTICAL);
-        ln1.addView(twclass);
-        ln1.addView(twbranch);
+        ln1.addView(createTextView(classText));
+        ln1.addView(createTextView(branchName));
 
         LinearLayout ln2 = new LinearLayout(this);
-        ln2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT));
-        TextView twteacher = createTextView("twteacher");
-        TextView twbroom = createTextView("twroom");
+        ln2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT,1f));
         ln2.setOrientation(LinearLayout.VERTICAL);
-        ln2.addView(twteacher);
-        ln2.addView(twbroom);
+        ln2.addView(createTextView(teacherAbb));
+        ln2.addView(createTextView(roomAbb));
 
-
-        tr.addView(ln1);
-        tr.addView(ln2);
-        tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
-        day1Layout.addView(tr);
+        mainLayout.addView(ln1);
+        mainLayout.addView(ln2);
+        day1Layout.addView(mainLayout);
     }
 
     public static String dateTextfromDate(LocalDate date){
@@ -127,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
         tw.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.weight = 1f;
+        tw.setLines(1);
         tw.setLayoutParams(params);
         return tw;
     }
