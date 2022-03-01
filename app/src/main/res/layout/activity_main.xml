@@ -26,12 +26,14 @@
             android:id="@+id/buttonPrevious"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Previous" />
+            android:layout_weight="0"
+            android:insetLeft="6dp"
+            android:insetRight="6dp"
+            android:text="Previous"
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/DayTV"
-
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -40,17 +42,17 @@
             app:layout_constraintBottom_toTopOf="@id/timetableLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
-
-
         </TextView>
 
         <Button
             android:id="@+id/buttonNext"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:minWidth="32dp"
-            android:text="Next" />
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:insetLeft="6dp"
+            android:insetRight="6dp"
+            android:text="Next"
+            android:textSize="20sp" />
     </LinearLayout>
 
 
@@ -58,7 +60,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#2A3F8A"
-        android:fillViewport="false"
+        android:fillViewport="true"
         android:minHeight="600dp"
         app:layout_constrainedHeight="false"
         app:layout_constraintEnd_toEndOf="parent"
@@ -75,7 +77,7 @@
 
             <LinearLayout
                 android:id="@+id/legend"
-                android:layout_width="50dp"
+                android:layout_width="40dp"
                 android:layout_height="2400dp"
                 android:orientation="vertical"></LinearLayout>
 

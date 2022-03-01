@@ -1,39 +1,34 @@
 package lu.btsin.bobtis;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.drawerlayout.widget.DrawerLayout;
+import static java.lang.Thread.sleep;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
-    private TextView monthDayText;
-    private TextView dayOfWeekTV;
-    private ListView hourListView;
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     private NavigationView navigationView;
@@ -47,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
         drawTimetable();
         setTitlebar();
         initNavbar();
-        //new ApiCall().execute("login");
+        login("","");
+        getSchoolyears();
     }
 
     protected void initNavbar(){
@@ -98,12 +94,13 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout legend = findViewById(R.id.legend);
         for (int i = 0;i<24;i++){
             TextView tw = new TextView(this);
-            tw.setText(i+":00"+"\n-\n"+(i+1)+":00");
             tw.setGravity(Gravity.CENTER);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(50, 100);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 100);
             params.weight = 1f;
             tw.setLines(3);
             tw.setLayoutParams(params);
+            tw.setText(i+":00"+"\n-\n"+(i+1)+":00");
+            tw.setBackgroundResource(R.drawable.legend);
             legend.addView(tw);
         }
 //        drawEvent(R.id.TLDay1,1000,"#D31282","B2IN","BOUCH","PROJE","SC-02",1000);
@@ -184,68 +181,99 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    class ApiCall extends AsyncTask {
+    protected void login(String username, String password){
+        API task =  new API();
+        task.delegate = this;
+        task.execute("login",username,password);
+    }
 
-        private Object logincall(Object[] objects){
+    protected void getSchoolyears(){
+        API task =  new API();
+        task.delegate = this;
+        task.execute("schoolyears");
+    }
 
-            return null;
+    @Override
+    public void processFinish(ServerResponse response) {
+        switch (response.endpoint){
+            case LOGIN:
+                prossessLogin(response);
+                break;
+            case SCHOOLYEARS:
+                prossessSchoolyear(response);
+                break;
+            case CLASSES:
+                prossessClasses(response);
+                break;
+            case CLASS:
+                prossessClass(response);
+                break;
         }
+    }
 
-        private Object sendApiCall(String address, String data){
-            try {
-                URL url = new URL("https://ssl.ltam.lu/bobtis/api/"+address+".php");
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("POST");
-                con.setDoOutput(true);
-                DataOutputStream out = new DataOutputStream(con.getOutputStream());
-                out.writeBytes(data);
-                out.flush();
-                out.close();
-                int status = con.getResponseCode();
-                InputStreamReader isr;
-                if (status >= 200 && status<300){
-                    isr = new InputStreamReader(con.getInputStream());
-                }else{
-                    //400 || 404 || 412
-                    isr = new InputStreamReader(con.getErrorStream());
+    private void prossessLogin(ServerResponse response){
+        try {
+            String message;
+            switch (response.status){
+                case 200:{
+                    message = "You are logged in as "+response.response.getString("type");
+                    break;
                 }
-                switch (status){
-                    case 400:{
-                        sendApiCall("login","");
-                    }
+                case 500:
+                case 400:
+                case 404:
+                case 412:{
+                    message = "Error: "+response.response.getString("error");
+                    break;
                 }
-                BufferedReader in = new BufferedReader(isr);
-                String inputLine;
-                StringBuffer content = new StringBuffer();
-                while ((inputLine = in.readLine()) != null) {
-                    content.append(inputLine);
+                default:{
+                    message = "Something went wrong";
                 }
-                in.close();
-                System.out.println(content.toString());
-            }catch (Exception e){
-                System.out.println(e);
-                System.out.println("--------------------------------------");
             }
-            return null;
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+    }
 
-        @Override
-        protected Object doInBackground(Object[] objects) {
-            String data="";
-            try {
-                switch (objects[0].toString()){
-                    case "login":{
-                        data = "username="+URLEncoder.encode(objects[1].toString(), "UTF-8")+"&"+"password="+URLEncoder.encode(objects[2].toString(), "UTF-8");
-                    }
+    private void prossessSchoolyear(ServerResponse response){
+
+        try {
+            String message;
+            switch (response.status){
+                case 200:{
+                    message = "Retrieved the schoolyears";
+//                    response.response.toJSONArray();
+                    break;
                 }
-
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                case 400:
+                case 500:{
+                    message = "Error: "+response.response.getString("error");
+                    break;
+                }
+                default:{
+                    message = "Something went wrong";
+                }
             }
-            return sendApiCall(objects[0].toString(),data);
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+    }
 
+    private void prossessClasses(ServerResponse response){
 
     }
 
+    private void prossessClass(ServerResponse response){
+
+    }
+
+    //Delete this. Used to test API
+    private void getAllNames(JSONObject obj){
+        for (Iterator<String> it = obj.keys(); it.hasNext(); ) {
+            String name = it.next();
+            System.out.println(name);
+        }
+    }
 }
