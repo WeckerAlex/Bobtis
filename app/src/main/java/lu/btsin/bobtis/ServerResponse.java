@@ -5,9 +5,9 @@ import org.json.JSONObject;
 public class ServerResponse {
     protected API.APIEndpoint endpoint;
     protected int status;
-    protected JSONObject response;
+    protected String response;
 
-    public ServerResponse(API.APIEndpoint endpoint, int status, JSONObject jsonObject) {
+    public ServerResponse(API.APIEndpoint endpoint, int status, String jsonObject) {
         this.endpoint = endpoint;
         this.status = status;
         this.response = jsonObject;

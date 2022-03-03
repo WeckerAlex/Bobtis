@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/my_drawer_layout"
+    android:id="@+id/my_drawer_layout2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Timetable"
@@ -14,6 +14,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:id="@+id/navView2"
+        android:fitsSystemWindows="true"
         app:menu="@menu/navigation_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -2,8 +2,6 @@ package lu.btsin.bobtis;
 
 import android.os.AsyncTask;
 
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,13 +10,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
-import java.net.CookieStore;
-import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.List;
 
 class API extends AsyncTask {
     public AsyncResponse delegate = null;
@@ -33,6 +27,7 @@ class API extends AsyncTask {
 
     public API() {
         super();
+        // If the cookiemanager has not been initialized, initialize it
         if (cookieManager == null){
             cookieManager = new CookieManager();
             CookieHandler.setDefault(cookieManager);
@@ -65,9 +60,7 @@ class API extends AsyncTask {
                 content.append(inputLine);
             }
             in.close();
-            JSONObject jsondata = new JSONObject(content.toString());
-            System.out.println(jsondata);
-            return new ServerResponse(endpoint,status, jsondata);
+            return new ServerResponse(endpoint,status, content.toString());
         }catch (Exception e){
             System.out.println(e);
         }
