@@ -1,18 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="HardcodedText">
+    <menu xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:ignore="HardcodedText">
+        <item android:title="Personal timetable">
+        <menu android:id="@+id/personal_timetables">
+            <item
+                android:id="@+id/personal_timetable_wecal508"
+                android:title="Alex Wecker"
+                />
 
-    <item
-        android:id="@+id/nav_account"
-        android:title="Bobtis" />
+        </menu>
 
-    <item
-        android:id="@+id/nav_settings"
-        android:title="Settings" />
+    </item>
+    <item android:title="Class timetables">
+    <menu android:id="@+id/class_timetable">
+        <item
+            android:id="@+id/class_timetable_B2IN"
+            android:title="B2IN"
+            />
+        <item
+            android:id="@+id/class_timetable_B1IN"
+            android:title="B1IN"
+            />
 
-    <item
-        android:id="@+id/nav_logout"
-        android:title="Logout"/>
+    </menu>
+    </item>
+    <item android:title="Room timetables">
+    <menu android:id="@+id/room_timetables"
+        >
+        <item
+            android:id="@+id/room_timetables_SC_02"
+            android:title="SC-02"
+            />
 
-</menu>
+    </menu>
+        </item>
+
+        <item
+            android:id="@+id/nav_homework"
+            android:title="My Homework"/>
+
+        <item
+            android:id="@+id/nav_settings"
+            android:title="Settings" />
+
+        <item
+            android:id="@+id/nav_login"
+            android:title="Login"/>
+    </menu>
