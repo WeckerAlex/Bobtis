@@ -1,5 +1,6 @@
 package lu.btsin.bobtis;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
 import java.io.BufferedReader;
@@ -10,15 +11,25 @@ import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.List;
 
 class API extends AsyncTask {
     public AsyncResponse delegate = null;
     private static CookieManager cookieManager = null;
+    public static String sessioncookie = "";
 
-    public enum APIEndpoint{
+    public static void saveSession(String username,String password,SharedPreferences prefs) {
+        SharedPreferences.Editor edit = prefs.edit();
+        edit.putString("username", username);
+        edit.putString("password", password);
+        edit.apply();
+    }
+
+    public enum APIEndpoint {
         LOGIN,
         SCHOOLYEARS,
         CLASSES,
@@ -28,22 +39,24 @@ class API extends AsyncTask {
     public API() {
         super();
         // If the cookiemanager has not been initialized, initialize it
-        if (cookieManager == null){
+        if (cookieManager == null) {
             cookieManager = new CookieManager();
             CookieHandler.setDefault(cookieManager);
             cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
         }
     }
 
+
     /**
-     *Sends a POST request to the API endpoint
+     * Sends a POST request to the API endpoint
+     *
      * @param endpoint the api endpoint
-     * @param data the additional data
+     * @param data     the additional data
      * @return The response from the server
      */
-    private ServerResponse sendApiCall(APIEndpoint endpoint, String data){
+    private ServerResponse sendApiCall(APIEndpoint endpoint, String data) {
         try {
-            URL url = new URL("https://ssl.ltam.lu/bobtis/api/"+endpoint.toString().toLowerCase()+".php");
+            URL url = new URL("https://ssl.ltam.lu/bobtis/api/" + endpoint.toString().toLowerCase() + ".php");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
             con.setDoOutput(true);
@@ -52,7 +65,7 @@ class API extends AsyncTask {
             out.flush();
             out.close();
             int status = con.getResponseCode();
-            InputStreamReader isr = getInputStreamReader(status,con);
+            InputStreamReader isr = getInputStreamReader(status, con);
             BufferedReader in = new BufferedReader(isr);
             String inputLine;
             StringBuffer content = new StringBuffer();
@@ -60,8 +73,14 @@ class API extends AsyncTask {
                 content.append(inputLine);
             }
             in.close();
-            return new ServerResponse(endpoint,status, content.toString());
-        }catch (Exception e){
+            if (endpoint == APIEndpoint.LOGIN && cookieManager != null) {
+                List<HttpCookie> cookielist = cookieManager.getCookieStore().getCookies();
+                for (HttpCookie cookie : cookielist) {
+                    sessioncookie = cookie.getValue();
+                }
+            }
+            return new ServerResponse(endpoint, status, content.toString());
+        } catch (Exception e) {
             System.out.println(e);
         }
         return null;
@@ -71,30 +90,31 @@ class API extends AsyncTask {
     protected Object doInBackground(Object[] objects) {
 
         APIEndpoint endpoint = APIEndpoint.valueOf(objects[0].toString().trim().toUpperCase());
-        String data="";
+        String data = "";
         try {
-            switch (endpoint){
-                case LOGIN:{
-                    data = "username="+ URLEncoder.encode(objects[1].toString(), "UTF-8")+"&"+"password="+URLEncoder.encode(objects[2].toString(), "UTF-8");
+            switch (endpoint) {
+                case LOGIN: {
+                    System.out.println("Input length: "+ objects.length);
+                    data = "username=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "password=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
                     break;
                 }
-                case SCHOOLYEARS:{
-                    data="";
+                case SCHOOLYEARS: {
+                    data = "";
                     break;
                 }
-                case CLASSES:{
-                    data = "schoolyear="+ URLEncoder.encode(objects[1].toString(), "UTF-8");
+                case CLASSES: {
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
                     break;
                 }
-                case CLASS:{
-                    data = "schoolyear="+ URLEncoder.encode(objects[1].toString(), "UTF-8")+"&"+"week="+ URLEncoder.encode(objects[2].toString(), "UTF-8")+"&"+"class="+URLEncoder.encode(objects[3].toString(), "UTF-8");
+                case CLASS: {
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "week=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "class=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
                     break;
                 }
             }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        return sendApiCall(endpoint,data);
+        return sendApiCall(endpoint, data);
     }
 
     @Override
@@ -105,9 +125,9 @@ class API extends AsyncTask {
 
     private InputStreamReader getInputStreamReader(int status, HttpURLConnection con) throws IOException {
         InputStreamReader isr;
-        if (status >= 200 && status<300){
+        if (status >= 200 && status < 300) {
             isr = new InputStreamReader(con.getInputStream());
-        }else{
+        } else {
             //400 || 404 || 412
             isr = new InputStreamReader(con.getErrorStream());
         }

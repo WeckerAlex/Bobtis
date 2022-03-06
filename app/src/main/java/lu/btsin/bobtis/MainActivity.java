@@ -1,5 +1,7 @@
 package lu.btsin.bobtis;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -30,7 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class MainActivity extends AppCompatActivity implements AsyncResponse{
+public class MainActivity extends AppCompatActivity{
 
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
@@ -244,17 +246,17 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 //        task.execute("login",username,password);
 //    }
 
-    protected void getSchoolyears(){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("schoolyears");
-    }
+//    protected void getSchoolyears(){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("schoolyears");
+//    }
 
-    protected void getClasses(String schoolyear){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("classes",schoolyear);
-    }
+//    protected void getClasses(String schoolyear){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("classes",schoolyear);
+//    }
 
 //    protected void getClass(String schoolyear,int week,String requestedclass){
 //        API task =  new API();
@@ -263,25 +265,34 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 //        setTitle(requestedclass);
 //    }
 
-    @Override
-    public void processFinish(ServerResponse response) {
-        switch (response.endpoint){
-            case LOGIN:
-//                prossessLogin(response);
-                break;
-            case SCHOOLYEARS:
-                prossessSchoolyear(response);
-                break;
-            case CLASSES:
-                prossessClasses(response);
-                break;
-            case CLASS:
-//                prossessClass(response);
-                break;
-        }
-    }
+//    @Override
+//    public void processFinish(ServerResponse response) {
+//        System.out.println(response.status);
+//        if (response.status != 412){
+//            switch (response.endpoint){
+//                case LOGIN:
+////                prossessLogin(response);
+//                    break;
+//                case SCHOOLYEARS:
+//                    prossessSchoolyear(response);
+//                    break;
+//                case CLASSES:
+//                    prossessClasses(response);
+//                    break;
+//                case CLASS:
+////                prossessClass(response);
+//                    break;
+//            }
+//        }else {
+//            System.out.println("Auto Logging in");
+//            SharedPreferences prefs = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
+//            API task =  new API();
+//            task.delegate = this;
+//            task.execute("login",prefs.getString("username",""),prefs.getString("password",""),prefs);
+//        }
+//    }
 
-//    private void prossessLogin(ServerResponse response){
+    //    private void prossessLogin(ServerResponse response){
 //        try {
 //            String message;
 //            JSONObject json = new JSONObject(response.response);
@@ -307,61 +318,61 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 //        }
 //    }
 
-    private void prossessSchoolyear(ServerResponse response){
-        try {
-            String message;
-            switch (response.status){
-                case 200:{
-                    JSONArray json = new JSONArray(response.response);
-                    message = "Retrieved the schoolyears";
-                    for (int i=0;i< json.length();i++){
-                        Toast.makeText(this, json.getString(i), Toast.LENGTH_LONG).show();
-                    }
-                    break;
-                }
-                case 400:
-                case 500:{
-                    JSONObject json = new JSONObject(response.response);
-                    message = "Error: "+json.getString("error");
-                    break;
-                }
-                default:{
-                    message = "Something went wrong";
-                }
-            }
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void prossessSchoolyear(ServerResponse response){
+//        try {
+//            String message;
+//            switch (response.status){
+//                case 200:{
+//                    JSONArray json = new JSONArray(response.response);
+//                    message = "Retrieved the schoolyears";
+////                    for (int i=0;i< json.length();i++){
+////                        Toast.makeText(this, json.getString(i), Toast.LENGTH_LONG).show();
+////                    }
+//                    break;
+//                }
+//                case 400:
+//                case 500:{
+//                    JSONObject json = new JSONObject(response.response);
+//                    message = "Error: "+json.getString("error");
+//                    break;
+//                }
+//                default:{
+//                    message = "Something went wrong";
+//                }
+//            }
+//            Toast.makeText(this, "dg"+response.status+message, Toast.LENGTH_LONG).show();
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-    private void prossessClasses(ServerResponse response){
-        try {
-            String message;
-            switch (response.status){
-                case 200:{
-                    JSONArray json = new JSONArray(response.response);
-                    message = "Retrieved the schoolyears";
-                    for (int i=0;i< json.length();i++){
-                        Toast.makeText(this, json.getString(i), Toast.LENGTH_LONG).show();
-                    }
-                    break;
-                }
-                case 400:
-                case 500:{
-                    JSONObject json = new JSONObject(response.response);
-                    message = "Error: "+json.getString("error");
-                    break;
-                }
-                default:{
-                    message = "Something went wrong";
-                }
-            }
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void prossessClasses(ServerResponse response){
+//        try {
+//            String message;
+//            switch (response.status){
+//                case 200:{
+//                    JSONArray json = new JSONArray(response.response);
+//                    message = "Retrieved the schoolyears";
+////                    for (int i=0;i< json.length();i++){
+////                        Toast.makeText(this, json.getString(i), Toast.LENGTH_LONG).show();
+////                    }
+//                    break;
+//                }
+//                case 400:
+//                case 500:{
+//                    JSONObject json = new JSONObject(response.response);
+//                    message = "Error: "+json.getString("error");
+//                    break;
+//                }
+//                default:{
+//                    message = "Something went wrong";
+//                }
+//            }
+//            Toast.makeText(this, "dg"+response.status+message, Toast.LENGTH_LONG).show();
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 //    private void prossessClass(ServerResponse response){
 //        try {

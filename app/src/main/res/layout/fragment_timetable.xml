@@ -84,70 +84,8 @@
                     android:id="@+id/TLDay1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="top"
                     android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/coursebackground"
-                        android:backgroundTint="#D31212"
-                        android:gravity="clip_horizontal"
-                        android:scaleY="1"
-                        android:baselineAligned="false">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/TVClass"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:backgroundTint="#00FFFFFF"
-                                android:gravity="center"
-                                android:lines="1"
-                                android:text="B2IN" />
-
-                            <TextView
-                                android:id="@+id/TVBranch"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:lines="1"
-                                android:singleLine="false"
-                                android:text="PROJE" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/TVteacher"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:lines="1"
-                                android:text="BOUCH" />
-
-                            <TextView
-                                android:id="@+id/TVRoom"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:lines="1"
-                                android:text="SC-03" />
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                </FrameLayout>
+                    android:orientation="vertical"/>
 
                 <FrameLayout
                     android:id="@+id/TLDay2"

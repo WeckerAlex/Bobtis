@@ -1,5 +1,7 @@
 package lu.btsin.bobtis;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -88,10 +90,13 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
         API task =  new API();
         task.delegate = this;
         task.execute("login",username,password);
+        API.saveSession(username,password,getContext().getSharedPreferences("UserPreferences",Context.MODE_PRIVATE));
+        getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
     }
 
     @Override
     public void processFinish(ServerResponse response) {
+        System.out.println(response.status);
         switch (response.endpoint){
             case LOGIN:
                 prossessLogin(response);
@@ -121,14 +126,14 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
                 case 400:
                 case 404:
                 case 412:{
-                    message = "Error: "+json.getString("error");
+                    message = "Error "+response.status+": "+json.getString("error");
                     break;
                 }
                 default:{
                     message = "Something went wrong";
                 }
             }
-            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), response.status+"message", Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -1,6 +1,10 @@
 package lu.btsin.bobtis;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -11,6 +15,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TableRow;
@@ -21,8 +26,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -36,10 +49,11 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
+    private LocalDate currentDate = LocalDate.now();
     private int hourHeight = 200;
     private int startHour = 7;
     private int endHour = 20;
-    private int week = 10;
+    private int week = getWeekNumber();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -86,8 +100,44 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        createButtonListener();
         drawTimetable();
-        getClass("2021-2022",10,"B2IN");
+        updateDate();
+    }
+
+    private void createButtonListener() {
+        ((Button) getView().findViewById(R.id.buttonNext)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                currentDate = currentDate.plusWeeks(1);
+                updateDate();
+            }
+        });
+        ((Button) getView().findViewById(R.id.buttonPrevious)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                currentDate = currentDate.minusWeeks(1);
+                updateDate();
+            }
+        });
+    }
+
+    private void updateDate(){
+        removeEvents();
+        ((TextView)getView().findViewById(R.id.DayTV)).setText(getWeekDescription());
+        getClass("2021-2022",getWeekNumber(),"B2IN");
+    }
+
+    private int getWeekNumber(){
+        Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        calendar.setTime(Date.from(currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        return calendar.get(Calendar.WEEK_OF_YEAR);
+    }
+
+    private String getWeekDescription(){
+        String start = currentDate.with(TemporalAdjusters.previous(DayOfWeek.MONDAY)).toString();
+        String end = currentDate.with(TemporalAdjusters.previous(DayOfWeek.SUNDAY)).toString();
+        return start+"-"+end;
     }
 
     protected void getClass(String schoolyear, int week, String requestedclass){
@@ -100,7 +150,8 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     public void processFinish(ServerResponse response) {
         switch (response.endpoint){
             case LOGIN:
-//                prossessLogin(response);
+                //auto login
+                prossessLogin(response);
                 break;
             case SCHOOLYEARS:
 //                prossessSchoolyear(response);
@@ -113,6 +164,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 break;
         }
     }
+
 
     protected void drawTimetable(){
         LinearLayout legend = getView().findViewById(R.id.legend);
@@ -130,7 +182,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     protected void insertDayEvents(JSONArray daylessons,int day){
-        System.out.println("Day");
         HashMap<String,String> extensions = new HashMap<>();
         try {
             //loop through every timeslot starting at the last course
@@ -156,10 +207,12 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     }else {
                         //lesson has no parent
                         //draw it
-                        //TODO: draw the event
 
-                        drawEvent(day,schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), schoolclass.getString("classe"), schoolclass.getString("teacher"), schoolclass.getString("subject"), schoolclass.getString("room"));
-
+                        String classe = getStringfromJsonArray(schoolclass.getJSONArray("classe"));
+                        String teacher = getStringfromJsonArray(schoolclass.getJSONArray("teacher"));
+                        String subject = getStringfromJsonArray(schoolclass.getJSONArray("subject"));
+                        String room = getStringfromJsonArray(schoolclass.getJSONArray("room"));
+                        drawEvent1x4(day,schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room);
                     }
                 }
 
@@ -169,16 +222,26 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
-    protected void drawEvent(int dayIndex,String startTime,String endTime,String color,String classText,String teacherAbb,String branchName,String roomAbb){
+    protected void removeEvents(){
+        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
+        for (int dayIndex = 0; dayIndex<5; dayIndex++){
+            FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
+            dayLayout.removeAllViews();
+        }
+
+    }
+
+    private String getStringfromJsonArray(JSONArray arr) throws JSONException {
+        return arr.join("/").replace("\"","");
+    }
+
+    protected void drawEvent2x2(int dayIndex, String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb){
         LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
         FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
-        System.out.println("DayLayout "+dayIndex+":"+dayLayout);
         int[] startime = Arrays.stream(startTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int[] endtime = Arrays.stream(endTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int startheight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
         int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
-        System.out.println(startheight);
-        System.out.println(duration);
         //the layout on which you are working
 //        FrameLayout day1Layout = (FrameLayout) findViewById(view);//The whole day
 
@@ -187,7 +250,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         LinearLayout mainLayout = new LinearLayout(getContext());
         mainLayout.setGravity(Gravity.CLIP_HORIZONTAL);
         mainLayout.setBackgroundResource(R.drawable.coursebackground);
-        mainLayout.getBackground().setTint(Color.parseColor(color));
+        ((GradientDrawable) mainLayout.getBackground()).setColor(Color.parseColor(color));
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
         layoutParams.topMargin = startheight;
         mainLayout.setLayoutParams(layoutParams);
@@ -210,15 +273,80 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         dayLayout.addView(mainLayout);
     }
 
+    protected void drawEvent1x4(int dayIndex, String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb){
+        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
+        FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
+        int[] startime = Arrays.stream(startTime.split(":")).mapToInt(Integer::parseInt).toArray();
+        int[] endtime = Arrays.stream(endTime.split(":")).mapToInt(Integer::parseInt).toArray();
+        int startheight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
+        int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
+        //the layout on which you are working
+//        FrameLayout day1Layout = (FrameLayout) findViewById(view);//The whole day
+
+
+        //create new entry
+        LinearLayout mainLayout = new LinearLayout(getContext());
+        mainLayout.setGravity(Gravity.CLIP_VERTICAL);
+        mainLayout.setOrientation(LinearLayout.VERTICAL);
+        mainLayout.setBackgroundResource(R.drawable.coursebackground);
+        ((GradientDrawable) mainLayout.getBackground()).setColor(Color.parseColor(color));
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
+        layoutParams.topMargin = startheight;
+        mainLayout.setLayoutParams(layoutParams);
+
+        mainLayout.addView(createTextView(classText));
+        mainLayout.addView(createTextView(branchName));
+
+        mainLayout.addView(createTextView(teacherAbb));
+        mainLayout.addView(createTextView(roomAbb));
+
+        mainLayout.setPadding(10,10,10,10);
+        dayLayout.addView(mainLayout);
+    }
+
     protected TextView createTextView(String text){
+        return createTextView(text,1);
+    }
+
+    protected TextView createTextView(String text,int lines){
         TextView tw = new TextView(getContext());
         tw.setText(text);
+        tw.setTextSize(10f);
+        tw.setTypeface(null, Typeface.BOLD);
         tw.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.weight = 1f;
-        tw.setLines(1);
+        tw.setLines(lines);
         tw.setLayoutParams(params);
         return tw;
+    }
+
+    private void prossessLogin(ServerResponse response){
+        //auto login
+        try {
+            String message;
+            JSONObject json = new JSONObject(response.response);
+            switch (response.status){
+                case 200:{
+                    message = "You are logged in as "+json.getString("type");
+                    getClass("2021-2022",10,"B2IN");
+                    break;
+                }
+                case 500:
+                case 400:
+                case 404:
+                case 412:{
+                    message = "Error "+response.status+": "+json.getString("error");
+                    break;
+                }
+                default:{
+                    message = "Something went wrong";
+                }
+            }
+            Toast.makeText(getContext(), response.status+" "+message, Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void prossessClass(ServerResponse response){
@@ -233,19 +361,30 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     }
                     break;
                 }
-                case 400:
+                case 400:{
+                    //no valid session
+                    //login with saved credentials
+                    autologin();
+                    break;
+                }
                 case 500:{
-                    JSONObject json = new JSONObject(response.response);
-                    message = "Error: "+json.getString("error");
-                    Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(),"Error: "+new JSONObject(response.response).getString("error"), Toast.LENGTH_LONG).show();
                     break;
                 }
                 default:{
-                    message = "Something went wrong";
+                    Toast.makeText(getContext(),"Not connected to the internet", Toast.LENGTH_LONG).show();
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void autologin() {
+        System.out.println("Auto Logging in");
+        SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
+        API task = new API();
+        task.delegate = this;
+        task.execute("login", prefs.getString("username", ""), prefs.getString("password", ""), prefs);
     }
 }
