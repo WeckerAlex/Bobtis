@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ import org.json.JSONObject;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
@@ -50,10 +52,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private static final String ARG_PARAM2 = "param2";
 
     private LocalDate currentDate = LocalDate.now();
+    Calendar calendar;
     private int hourHeight = 200;
     private int startHour = 7;
     private int endHour = 20;
-    private int week = getWeekNumber();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -100,6 +102,8 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        calendar = Calendar.getInstance(Locale.FRANCE);
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
         createButtonListener();
         drawTimetable();
         updateDate();
@@ -129,14 +133,17 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     private int getWeekNumber(){
-        Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        //get the date the user wants to be displayed
         calendar.setTime(Date.from(currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        Log.i("Api week", String.valueOf(calendar.get(Calendar.WEEK_OF_YEAR)));
         return calendar.get(Calendar.WEEK_OF_YEAR);
     }
 
     private String getWeekDescription(){
-        String start = currentDate.with(TemporalAdjusters.previous(DayOfWeek.MONDAY)).toString();
-        String end = currentDate.with(TemporalAdjusters.previous(DayOfWeek.SUNDAY)).toString();
+        Log.i("API",currentDate.toString());
+        String start = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).toString();
+        String end = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).toString();
+        Log.i("API",start+"-"+end);
         return start+"-"+end;
     }
 
@@ -182,6 +189,34 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     protected void insertDayEvents(JSONArray daylessons,int day){
+//        System.out.println("insertDayEvents");
+        try {
+            if (daylessons.length()!=0){
+                //events recieved
+                JSONArray firstlesson = daylessons.getJSONArray(0);
+                if (firstlesson.length()!=0){
+                    if(firstlesson.getJSONObject(0).getBoolean("is_holiday")){
+                        //holiday
+                        insertHoliday(firstlesson.getJSONObject(0),day);
+                    }else{
+                        //school
+                        insertSchooldayEvents(daylessons,day);
+                    }
+                }
+            }
+        }catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void insertHoliday(JSONObject info,int day) throws JSONException {
+        Log.i("TAG", "insertHoliday: "+info);
+        drawHolidayEvent(day,info.getString("color"),info.getString("name"));
+//        drawEvent1x4(day,"0:00","24:00", info.getString("color"), info.getString("name"), "fghn", "gfh", "xfh");
+    }
+
+    private void insertSchooldayEvents(JSONArray daylessons,int day){
+        Log.i("TAG", "insertSchooldayEvents: ");
         HashMap<String,String> extensions = new HashMap<>();
         try {
             //loop through every timeslot starting at the last course
@@ -283,7 +318,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         //the layout on which you are working
 //        FrameLayout day1Layout = (FrameLayout) findViewById(view);//The whole day
 
-
         //create new entry
         LinearLayout mainLayout = new LinearLayout(getContext());
         mainLayout.setGravity(Gravity.CLIP_VERTICAL);
@@ -300,6 +334,33 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         mainLayout.addView(createTextView(teacherAbb));
         mainLayout.addView(createTextView(roomAbb));
 
+        mainLayout.setPadding(10,10,10,10);
+        dayLayout.addView(mainLayout);
+    }
+
+    protected void drawHolidayEvent(int dayIndex, String color, String name){
+        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
+        FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
+        int duration = (endHour-startHour)*hourHeight;
+
+        //create new entry
+        LinearLayout mainLayout = new LinearLayout(getContext());
+        mainLayout.setGravity(Gravity.CENTER);
+        mainLayout.setOrientation(LinearLayout.VERTICAL);
+        mainLayout.setBackgroundResource(R.drawable.coursebackground);
+        ((GradientDrawable) mainLayout.getBackground()).setColor(Color.parseColor(color));
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
+        mainLayout.setLayoutParams(layoutParams);
+
+        TextView tw = new TextView(getContext());
+        tw.setText(name);
+        tw.setTextSize(15f);
+        tw.setTypeface(null, Typeface.BOLD);
+        tw.setGravity(Gravity.CENTER);
+        tw.setRotation(-90);
+        tw.setLines(1);
+
+        mainLayout.addView(tw);
         mainLayout.setPadding(10,10,10,10);
         dayLayout.addView(mainLayout);
     }
@@ -357,6 +418,8 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     JSONArray dayarray = new JSONArray(response.response);//get the array containing the single days
                     for (int day=0;day< dayarray.length();day++){
                         //insert a single day
+                        Log.i("Day",String.valueOf(day));
+                        Log.i("Day",dayarray.getJSONArray(day).toString());
                         insertDayEvents(dayarray.getJSONArray(day),day);
                     }
                     break;
