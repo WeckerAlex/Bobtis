@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -212,7 +214,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private void insertHoliday(JSONObject info,int day) throws JSONException {
         Log.i("TAG", "insertHoliday: "+info);
         drawHolidayEvent(day,info.getString("color"),info.getString("name"));
-//        drawEvent1x4(day,"0:00","24:00", info.getString("color"), info.getString("name"), "fghn", "gfh", "xfh");
     }
 
     private void insertSchooldayEvents(JSONArray daylessons,int day){
@@ -346,21 +347,30 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         //create new entry
         LinearLayout mainLayout = new LinearLayout(getContext());
         mainLayout.setGravity(Gravity.CENTER);
-        mainLayout.setOrientation(LinearLayout.VERTICAL);
+        mainLayout.setOrientation(LinearLayout.HORIZONTAL);
         mainLayout.setBackgroundResource(R.drawable.coursebackground);
         ((GradientDrawable) mainLayout.getBackground()).setColor(Color.parseColor(color));
-        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
-        mainLayout.setLayoutParams(layoutParams);
 
         TextView tw = new TextView(getContext());
+        tw.setLines(1);
+        tw.setMaxLines(1);
         tw.setText(name);
-        tw.setTextSize(15f);
+        tw.setTextSize(20f);
         tw.setTypeface(null, Typeface.BOLD);
         tw.setGravity(Gravity.CENTER);
-        tw.setRotation(-90);
-        tw.setLines(1);
+        tw.setWidth((endHour-startHour)*hourHeight);
+        tw.setRotation(270);
 
-        mainLayout.addView(tw);
+        RelativeLayout container = new RelativeLayout(getContext());
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
+        lp.setMargins(-duration/3, 0, -duration/3, 0);
+        container.setGravity(Gravity.CENTER);
+        container.setLayoutParams(lp);
+        container.addView(tw);
+        mainLayout.addView(container);
+
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
+        mainLayout.setLayoutParams(layoutParams);
         mainLayout.setPadding(10,10,10,10);
         dayLayout.addView(mainLayout);
     }
