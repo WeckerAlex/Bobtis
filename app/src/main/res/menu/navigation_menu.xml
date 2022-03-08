@@ -1,50 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <menu xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        tools:ignore="HardcodedText">
-        <item android:title="Personal timetable">
-        <menu android:id="@+id/personal_timetables">
-            <item
-                android:id="@+id/personal_timetable_wecal508"
-                android:title="Alex Wecker"
-                />
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+
+    <item
+        android:id="@+id/personal_timetable"
+        android:title="My timetable"
+        />
+    <item
+        android:id="@+id/nav_homework"
+        android:title="My Homework"
+        />
+
+    <item android:title="Class timetables"
+        android:icon="@drawable/ic_baseline_chevron_left_24"
+        android:id="@+id/class_timetable">
+        <menu >
+        </menu>
+    </item>
+
+    <item android:title="Room timetables">
+        <menu android:id="@+id/room_timetables">
 
         </menu>
-
     </item>
-    <item android:title="Class timetables">
-    <menu android:id="@+id/class_timetable">
-        <item
-            android:id="@+id/class_timetable_B2IN"
-            android:title="B2IN"
-            />
-        <item
-            android:id="@+id/class_timetable_B1IN"
-            android:title="B1IN"
-            />
 
-    </menu>
+    <item android:title="Teacher timetables">
+        <menu android:id="@+id/teacher_timetable">
+
+        </menu>
     </item>
-    <item android:title="Room timetables">
-    <menu android:id="@+id/room_timetables"
-        >
-        <item
-            android:id="@+id/room_timetables_SC_02"
-            android:title="SC-02"
-            />
 
-    </menu>
-        </item>
+    <item
+        android:id="@+id/nav_settings"
+        android:title="Settings" />
 
-        <item
-            android:id="@+id/nav_homework"
-            android:title="My Homework"/>
+    <item
+        android:id="@+id/nav_login"
+        android:title="Login"/>
 
-        <item
-            android:id="@+id/nav_settings"
-            android:title="Settings" />
 
-        <item
-            android:id="@+id/nav_login"
-            android:title="Login"/>
-    </menu>
+</menu>

@@ -407,7 +407,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 case 400:
                 case 404:
                 case 412:{
-                    message = "Error "+response.status+": "+json.getString("error");
+                    message = json.getString("error");
                     break;
                 }
                 default:{
@@ -456,8 +456,13 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private void autologin() {
         System.out.println("Auto Logging in");
         SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
-        API task = new API();
-        task.delegate = this;
-        task.execute("login", prefs.getString("username", ""), prefs.getString("password", ""), prefs);
+        if (prefs.contains("username") && prefs.contains("password")){
+            API task = new API();
+            task.delegate = this;
+            task.execute("login", prefs.getString("username", ""), prefs.getString("password", ""), prefs);
+        }else{
+            Toast.makeText(getContext(), "Log in first", Toast.LENGTH_LONG).show();
+        }
+
     }
 }

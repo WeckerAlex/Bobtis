@@ -80,7 +80,6 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
         EditText etpassword = (EditText) getView().findViewById(R.id.passwordInput);
         loginbutton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // TODO Auto-generated method stub
                 login(etUsername.getText().toString(),etpassword.getText().toString());
             }
         });
@@ -91,7 +90,6 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
         task.delegate = this;
         task.execute("login",username,password);
         API.saveSession(username,password,getContext().getSharedPreferences("UserPreferences",Context.MODE_PRIVATE));
-        getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
     }
 
     @Override
@@ -101,15 +99,10 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
             case LOGIN:
                 prossessLogin(response);
                 break;
-            case SCHOOLYEARS:
-//                prossessSchoolyear(response);
+            default:{
                 break;
-            case CLASSES:
-//                prossessClasses(response);
-                break;
-            case CLASS:
-//                prossessClass(response);
-                break;
+            }
+
         }
     }
 
@@ -126,14 +119,14 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
                 case 400:
                 case 404:
                 case 412:{
-                    message = "Error "+response.status+": "+json.getString("error");
+                    message = "ErrorLogin "+response.status+": "+json.getString("error");
                     break;
                 }
                 default:{
                     message = "Something went wrong";
                 }
             }
-            Toast.makeText(getContext(), response.status+"message", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
             e.printStackTrace();
         }

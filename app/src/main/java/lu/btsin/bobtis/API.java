@@ -20,7 +20,6 @@ import java.util.List;
 class API extends AsyncTask {
     public AsyncResponse delegate = null;
     private static CookieManager cookieManager = null;
-    public static String sessioncookie = "";
 
     public static void saveSession(String username,String password,SharedPreferences prefs) {
         SharedPreferences.Editor edit = prefs.edit();
@@ -33,7 +32,12 @@ class API extends AsyncTask {
         LOGIN,
         SCHOOLYEARS,
         CLASSES,
-        CLASS
+        CLASS,
+        ROOMS,
+        TEACHERS,
+        TEACHER,
+        ROOM,
+        STUDENTS
     }
 
     public API() {
@@ -73,12 +77,6 @@ class API extends AsyncTask {
                 content.append(inputLine);
             }
             in.close();
-            if (endpoint == APIEndpoint.LOGIN && cookieManager != null) {
-                List<HttpCookie> cookielist = cookieManager.getCookieStore().getCookies();
-                for (HttpCookie cookie : cookielist) {
-                    sessioncookie = cookie.getValue();
-                }
-            }
             return new ServerResponse(endpoint, status, content.toString());
         } catch (Exception e) {
             System.out.println(e);
@@ -88,13 +86,11 @@ class API extends AsyncTask {
 
     @Override
     protected Object doInBackground(Object[] objects) {
-
         APIEndpoint endpoint = APIEndpoint.valueOf(objects[0].toString().trim().toUpperCase());
         String data = "";
         try {
             switch (endpoint) {
                 case LOGIN: {
-                    System.out.println("Input length: "+ objects.length);
                     data = "username=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "password=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
                     break;
                 }
@@ -110,6 +106,18 @@ class API extends AsyncTask {
                     data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "week=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "class=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
                     break;
                 }
+                case ROOMS:
+                case TEACHERS:
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
+                    break;
+                case TEACHER:
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "week=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "teacher=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
+                    break;
+                case ROOM:
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "week=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "room=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
+                    break;
+                case STUDENTS:
+                    break;
             }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
