@@ -50,22 +50,31 @@ public class MainActivity extends AppCompatActivity {
     private Fragment timetableFragment = new Timetable_fragment();
     private Fragment loginFragment = new Login_Fragment();
     private Fragment searchFragment = new Search_Fragment();
+    private SharedPreferences prefs;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SharedPreferences prefs = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
+        prefs = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
         if (!(prefs.contains("username") && prefs.contains("password"))){
             switchFragment(loginFragment);
         }else{
             //logging in at startup
-            API.autologin(prefs,null);
+            API.autologin(prefs, null);
         }
         initNavbar();
         ActionBar actionBar = getSupportActionBar();
         actionBar.setIcon(R.drawable.ic_baseline_search_24);
+        if (prefs.contains("firstname") && prefs.contains("name") && prefs.contains("classe") && prefs.contains("username")){
+            TextView nhn = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_name);
+            nhn.setText(prefs.getString("firstname","")+" "+prefs.getString("name",""));
+            TextView nhc = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_class);
+            nhc.setText(prefs.getString("classe",""));
+            TextView nhi = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_iam);
+            nhi.setText(prefs.getString("username",""));
+        }
 
     }
 
@@ -96,7 +105,10 @@ public class MainActivity extends AppCompatActivity {
                 //TODO: adapt to new items
                 switch (item.getItemId()){
                     case R.id.personal_timetable: {
-                        switchFragment(timetableFragment);
+                        Log.i("Menuit","sdg");
+                        if (prefs.contains("classe")){
+                            displayClass(prefs.getString("classe",""));
+                        }
                         break;
                     }
                     case R.id.nav_homework:{
@@ -120,13 +132,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-//    private void fillSideNavigation(){
-//        //TODO Init the navbar with few items
-//        getSchoolyears();
-//        getTeachers("2021-2022");
-//        getClasses("2021-2022");
-//    }
 
     protected void switchFragment(Fragment fr){
         FragmentManager fragmentManager = getSupportFragmentManager();

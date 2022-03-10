@@ -3,7 +3,12 @@ package lu.btsin.bobtis;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -17,17 +22,50 @@ import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 class API extends AsyncTask {
     public AsyncResponse delegate = null;
     private static CookieManager cookieManager = null;
 
-    public static void saveSession(String username,String password,SharedPreferences prefs) {
+    public static void saveloginData(String username, String password, SharedPreferences prefs) {
         SharedPreferences.Editor edit = prefs.edit();
         edit.putString("username", username);
         edit.putString("password", password);
         edit.apply();
+    }
+
+    public static void saveloginData(SharedPreferences prefs, String jsonString){
+        Log.i("spclasse","classe");
+        try {
+            JSONObject json = new JSONObject(jsonString);
+            SharedPreferences.Editor edit = prefs.edit();
+            edit.putString("type", json.getString("type"));
+            edit.putString("name", json.getString("name"));
+            edit.putString("firstname", json.getString("firstname"));
+            edit.putString("username", json.getString("username"));
+            edit.putString("email", json.getString("email"));
+            if (json.has("id_student")){
+                edit.putString("id_student", json.getString("id_student"));
+            }
+            if (json.has("id_teacher")){
+                edit.putString("id_teacher", json.getString("id_teacher"));
+            }
+            if (json.has("id_staff")){
+                edit.putString("id_staff", json.getString("id_staff"));
+            }
+            edit.putString("classe", json.getString("classe"));
+            JSONArray jsonclasse = json.getJSONArray("rights");
+            ArrayList<String> rightsdata = new ArrayList<>();
+            for (int i = 0; i < jsonclasse.length(); i++) {
+                rightsdata.add(jsonclasse.getString(i));
+            }
+            edit.putString("rights", String.join(",",rightsdata));
+            edit.apply();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public enum APIEndpoint {
@@ -148,7 +186,6 @@ class API extends AsyncTask {
 
     public static void autologin(SharedPreferences prefs,AsyncResponse ar) {
         System.out.println("Auto Logging in");
-//        SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
         if (prefs.contains("username") && prefs.contains("password")){
             API task = new API();
             task.delegate = ar;

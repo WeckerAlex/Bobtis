@@ -1,6 +1,7 @@
 package lu.btsin.bobtis;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -149,6 +150,15 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     getTeacher(getSchoolyear(),getWeekNumber(),requestedData);
                     break;
             }
+        }else{
+            SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
+            if (prefs.contains("classe")){
+                Log.i("showtimetable","test");
+                currentaction = Actions.CLASS;
+                requestedData = prefs.getString("classe","");
+                updateDate();
+            }
+
         }
     }
 
@@ -450,7 +460,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     message = "Something went wrong";
                 }
             }
-            Toast.makeText(getContext(), response.status+" "+message, Toast.LENGTH_LONG).show();
+//            Toast.makeText(getContext(), response.status+" "+message, Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
             e.printStackTrace();
         }

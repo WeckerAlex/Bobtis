@@ -25,22 +25,19 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:layout_weight="0.6"
-            android:autoSizeTextType="uniform"
-            android:text="Alex Wecker"/>
+            android:autoSizeTextType="uniform"/>
         <TextView
             android:id="@+id/navbar_header_class"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:text="B2IN"/>
+            android:gravity="center"/>
         <TextView
             android:id="@+id/navbar_header_iam"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:text="wecal508"/>
+            android:gravity="center"/>
     </LinearLayout>
 
 </LinearLayout>

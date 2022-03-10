@@ -1,7 +1,6 @@
 package lu.btsin.bobtis;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -78,18 +77,14 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
         Button loginbutton = (Button) getView().findViewById(R.id.loginButton);
         EditText etUsername = (EditText) getView().findViewById(R.id.usernameInput);
         EditText etpassword = (EditText) getView().findViewById(R.id.passwordInput);
-        loginbutton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                login(etUsername.getText().toString(),etpassword.getText().toString());
-            }
-        });
+        loginbutton.setOnClickListener(v -> login(etUsername.getText().toString(),etpassword.getText().toString()));
     }
 
     protected void login(String username, String password){
         API task =  new API();
         task.delegate = this;
         task.execute("login",username,password);
-        API.saveSession(username,password,getContext().getSharedPreferences("UserPreferences",Context.MODE_PRIVATE));
+        API.saveloginData(username,password,getContext().getSharedPreferences("UserPreferences",Context.MODE_PRIVATE));
     }
 
     @Override
@@ -113,6 +108,7 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
             switch (response.status){
                 case 200:{
                     message = "You are logged in as "+json.getString("type");
+                    API.saveloginData(getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response);
                     break;
                 }
                 case 500:
