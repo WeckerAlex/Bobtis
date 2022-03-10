@@ -1,7 +1,9 @@
 package lu.btsin.bobtis;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -128,7 +130,9 @@ class API extends AsyncTask {
     @Override
     protected void onPostExecute(Object sr) {
         super.onPostExecute(sr);
-        delegate.processFinish((ServerResponse) sr);
+        if (delegate != null){
+            delegate.processFinish((ServerResponse) sr);
+        }
     }
 
     private InputStreamReader getInputStreamReader(int status, HttpURLConnection con) throws IOException {
@@ -140,6 +144,16 @@ class API extends AsyncTask {
             isr = new InputStreamReader(con.getErrorStream());
         }
         return isr;
+    }
+
+    public static void autologin(SharedPreferences prefs,AsyncResponse ar) {
+        System.out.println("Auto Logging in");
+//        SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
+        if (prefs.contains("username") && prefs.contains("password")){
+            API task = new API();
+            task.delegate = ar;
+            task.execute("login", prefs.getString("username", ""), prefs.getString("password", ""), prefs);
+        }
     }
 
 }

@@ -28,21 +28,24 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements AsyncResponse {
+public class MainActivity extends AppCompatActivity {
 
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     private NavigationView navigationView;
-    private String user = "";
-    private String pass = "";
-    private int hourHeight = 200;
-    private int startHour = 7;
-    private int endHour = 20;
-    private int week = 10;
+//    private String user = "";
+//    private String pass = "";
+//    private int hourHeight = 200;
+//    private int startHour = 7;
+//    private int endHour = 20;
+//    private int week = 10;
     private ArrayList<String> availableSchoolYears;
     private ArrayList<String> availableClasses;
     private ArrayList<String> availableRooms;
     private ArrayList<String> availableTeachers;
+    private String displayedTeacher="";
+    private String displayedRoom="";
+    private String displayedClass="";
 
     private Fragment timetableFragment = new Timetable_fragment();
     private Fragment loginFragment = new Login_Fragment();
@@ -58,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             switchFragment(loginFragment);
         }else{
             //logging in at startup
-            login(prefs.getString("username",""),prefs.getString("password",""));
+            API.autologin(prefs,null);
         }
         initNavbar();
         ActionBar actionBar = getSupportActionBar();
@@ -118,12 +121,12 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         });
     }
 
-    private void fillSideNavigation(){
-        //TODO Init the navbar with few items
-        getSchoolyears();
-        getTeachers("2021-2022");
-        getClasses("2021-2022");
-    }
+//    private void fillSideNavigation(){
+//        //TODO Init the navbar with few items
+//        getSchoolyears();
+//        getTeachers("2021-2022");
+//        getClasses("2021-2022");
+//    }
 
     protected void switchFragment(Fragment fr){
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -159,156 +162,185 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         return super.onOptionsItemSelected(item);
     }
 
-    protected void login(String username, String password){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("login",username,password);
+    public void displayTeacher(String teacher){
+        displayedTeacher=teacher;
+        displayedRoom="";
+        displayedClass="";
+        String lastname = teacher.split(" ")[0].substring(0,3).toUpperCase();
+        String firstname = teacher.split(" ")[1].substring(0,2).toUpperCase();
+        ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.TEACHER,lastname + firstname);
+        switchFragment(timetableFragment);
     }
 
-    private void getSchoolyears(){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("schoolyears");
-
-    }
-    private void getRooms(String schoolyear){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("rooms",schoolyear);
-    }
-    private void getTeachers(String schoolyear){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("teachers",schoolyear);
+    public void displayRoom(String room){
+        Log.i("Segue","Room: "+room);
+        displayedTeacher="";
+        displayedRoom=room;
+        displayedClass="";
+        ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.ROOM,room);
+        switchFragment(timetableFragment);
     }
 
-    private void getClasses(String schoolyear){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("classes",schoolyear);
+    public void displayClass(String classe){
+        Log.i("Segue","Class: "+classe);
+        displayedTeacher="";
+        displayedRoom="";
+        displayedClass=classe;
+        ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.CLASS,classe);
+        switchFragment(timetableFragment);
     }
 
+//    protected void login(String username, String password){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("login",username,password);
+//    }
 
-    @Override
-    public void processFinish(ServerResponse response) {
-        System.out.println(response.status);
-        if (response.status != 412){
-            switch (response.endpoint){
-                case LOGIN:
-                    //initial login response
-                    prossessLogin(response);
-                    break;
-                case SCHOOLYEARS:
-                case CLASSES:
-                case ROOMS:
-                case TEACHERS:
-                    prossessResponseArray(response);
-                    break;
-            }
-        }else {
-            System.out.println("Auto logging in");
-            SharedPreferences prefs = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
-            API task =  new API();
-            task.delegate = this;
-            task.execute("login",prefs.getString("username",""),prefs.getString("password",""),prefs);
-        }
-    }
+//    private void getSchoolyears(){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("schoolyears");
+//
+//    }
 
-    private void prossessLogin(ServerResponse response){
-        try {
-            String message;
-            JSONObject json = new JSONObject(response.response);
-            switch (response.status){
-                case 200:{
-                    fillSideNavigation();
-                    message = "You are logged in as "+json.getString("type");
-                    break;
-                }
-                case 500:
-                case 400:
-                case 404:
-                case 412:{
-                    message = "Error: "+json.getString("error");
-                    break;
-                }
-                default:{
-                    message = "Something went wrong";
-                }
-            }
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void getRooms(String schoolyear){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("rooms",schoolyear);
+//    }
 
-    private void prossessResponseArray(ServerResponse response){
-        Log.i("prossessResponseArray", String.valueOf(response.status));
-        try {
-            String message;
-            switch (response.status){
-                case 200:{
-                    JSONArray json = new JSONArray(response.response);
-                    //TODO Fill the arrays
-                    Menu menu = null;
-                    Log.i("Log",response.endpoint.toString());
-                    switch (response.endpoint){
-                        case SCHOOLYEARS:
-                            menu = findViewById(R.id.class_timetable);
-                            availableSchoolYears = jsontoArrayList(json);
-                            Log.i("Log", String.valueOf(availableSchoolYears.size()));
-                            break;
-                        case CLASSES:
-                            menu = navigationView.getMenu().getItem(2).getSubMenu();
-                            availableClasses = jsontoArrayList(json);
-                            Log.i("Log", String.valueOf(availableClasses.size()));
-                            for (int i = 0; i <availableClasses.size(); i++) {
-                                Log.i("Log", String.valueOf(menu != null));
-                                if (menu != null){
-                                    Log.i("Log","Inserting " + availableClasses.get(i));
+//    private void getTeachers(String schoolyear){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("teachers",schoolyear);
+//    }
 
-                                    menu.add(availableClasses.get(i));
-                                }
-                            }
-                            break;
-                        case ROOMS:
-                            availableRooms = jsontoArrayList(json);
-                            Log.i("Log", String.valueOf(availableRooms.size()));
-                            break;
-                        case TEACHERS:
-                            menu = findViewById(R.id.teacher_timetable);
-                            availableTeachers = jsontoArrayList(json);
-                            Log.i("Log", String.valueOf(availableTeachers.size()));
-                            break;
-                    }
+//    private void getClasses(String schoolyear){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("classes",schoolyear);
+//    }
 
+//    @Override
+//    public void processFinish(ServerResponse response) {
+//        System.out.println(response.status);
+//        if (response.status != 412){
+//            switch (response.endpoint){
+//                case LOGIN:
+//                    //initial login response
+//                    prossessLogin(response);
+//                    break;
+//                case SCHOOLYEARS:
+//                case CLASSES:
+//                case ROOMS:
+//                case TEACHERS:
+//                    prossessResponseArray(response);
+//                    break;
+//            }
+//        }else {
+//            System.out.println("Auto logging in");
+//            SharedPreferences prefs = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
+//            API task =  new API();
+//            task.delegate = this;
+//            task.execute("login",prefs.getString("username",""),prefs.getString("password",""),prefs);
+//        }
+//    }
 
-                    message = "Retrieved the "+response.endpoint;
-                    break;
-                }
-                case 400:
-                case 500:{
-                    JSONObject json = new JSONObject(response.response);
-                    message = "Error: "+json.getString("error");
-                    break;
-                }
-                default:{
-                    message = "Something went wrong";
-                }
-            }
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-    private ArrayList<String> jsontoArrayList(JSONArray json){
-        ArrayList<String> arr = new ArrayList<>();
-        try {
-            for (int i = 0; i < json.length(); i++) {
-                arr.add(json.getString(i));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return arr;
-    }
+//    private void prossessLogin(ServerResponse response){
+//        try {
+//            String message;
+//            JSONObject json = new JSONObject(response.response);
+//            switch (response.status){
+//                case 200:{
+//                    fillSideNavigation();
+//                    message = "You are logged in as "+json.getString("type");
+//                    break;
+//                }
+//                case 500:
+//                case 400:
+//                case 404:
+//                case 412:{
+//                    message = "Error: "+json.getString("error");
+//                    break;
+//                }
+//                default:{
+//                    message = "Something went wrong";
+//                }
+//            }
+//            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+//    private void prossessResponseArray(ServerResponse response){
+//        Log.i("prossessResponseArray", String.valueOf(response.status));
+//        try {
+//            String message;
+//            switch (response.status){
+//                case 200:{
+//                    JSONArray json = new JSONArray(response.response);
+//                    Menu menu = null;
+//                    Log.i("Log",response.endpoint.toString());
+//                    switch (response.endpoint){
+//                        case SCHOOLYEARS:
+//                            menu = findViewById(R.id.class_timetable);
+//                            availableSchoolYears = jsontoArrayList(json);
+//                            Log.i("Log", String.valueOf(availableSchoolYears.size()));
+//                            break;
+//                        case CLASSES:
+//                            menu = navigationView.getMenu().getItem(2).getSubMenu();
+//                            availableClasses = jsontoArrayList(json);
+//                            Log.i("Log", String.valueOf(availableClasses.size()));
+//                            for (int i = 0; i <availableClasses.size(); i++) {
+//                                Log.i("Log", String.valueOf(menu != null));
+//                                if (menu != null){
+//                                    Log.i("Log","Inserting " + availableClasses.get(i));
+//
+//                                    menu.add(availableClasses.get(i));
+//                                }
+//                            }
+//                            break;
+//                        case ROOMS:
+//                            availableRooms = jsontoArrayList(json);
+//                            Log.i("Log", String.valueOf(availableRooms.size()));
+//                            break;
+//                        case TEACHERS:
+//                            menu = findViewById(R.id.teacher_timetable);
+//                            availableTeachers = jsontoArrayList(json);
+//                            Log.i("Log", String.valueOf(availableTeachers.size()));
+//                            break;
+//                    }
+//
+//
+//                    message = "Retrieved the "+response.endpoint;
+//                    break;
+//                }
+//                case 400:
+//                case 500:{
+//                    JSONObject json = new JSONObject(response.response);
+//                    message = "Error: "+json.getString("error");
+//                    break;
+//                }
+//                default:{
+//                    message = "Something went wrong";
+//                }
+//            }
+//            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+//    private ArrayList<String> jsontoArrayList(JSONArray json){
+//        ArrayList<String> arr = new ArrayList<>();
+//        try {
+//            for (int i = 0; i < json.length(); i++) {
+//                arr.add(json.getString(i));
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return arr;
+//    }
 }

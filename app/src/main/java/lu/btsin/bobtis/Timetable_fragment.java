@@ -1,7 +1,6 @@
 package lu.btsin.bobtis;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -11,13 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -32,9 +29,7 @@ import org.json.JSONObject;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.ZoneId;
-import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -53,12 +48,19 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    public enum Actions {
+        CLASS,
+        ROOM,
+        TEACHER
+    }
 
     private LocalDate currentDate = LocalDate.now();
-    Calendar calendar;
+    private static Calendar calendar;
     private int hourHeight = 200;
     private int startHour = 7;
     private int endHour = 20;
+    private Actions currentaction;
+    private String requestedData;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -107,6 +109,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         super.onViewCreated(view, savedInstanceState);
         calendar = Calendar.getInstance(Locale.FRANCE);
         calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        Log.i("Calendar","created");
         createButtonListener();
         drawTimetable();
         updateDate();
@@ -130,9 +133,32 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     private void updateDate(){
+        Log.i("Calendar","updateDate");
         removeEvents();
         ((TextView)getView().findViewById(R.id.DayTV)).setText(getWeekDescription());
-        getClass("2021-2022",getWeekNumber(),"B2IN");
+        Log.i("currentaction", String.valueOf(currentaction));
+        if (currentaction != null){
+            switch (currentaction){
+                case CLASS:
+                    getClass(getSchoolyear(),getWeekNumber(),requestedData);
+                    break;
+                case ROOM:
+                    getRoom(getSchoolyear(),getWeekNumber(),requestedData);
+                    break;
+                case TEACHER:
+                    getTeacher(getSchoolyear(),getWeekNumber(),requestedData);
+                    break;
+            }
+        }
+    }
+
+    private String getSchoolyear(){
+        int currentyear = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).getYear();
+        int currentSchoolyear = currentyear;
+        if (currentDate.getMonth().getValue()<8){
+            currentSchoolyear--;
+        }
+        return currentSchoolyear+"-"+ (currentSchoolyear+1);
     }
 
     private int getWeekNumber(){
@@ -156,6 +182,18 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         task.execute("class",schoolyear,week,requestedclass);
     }
 
+    protected void getRoom(String schoolyear, int week, String room){
+        API task =  new API();
+        task.delegate = this;
+        task.execute("room",schoolyear,week,room);
+    }
+
+    protected void getTeacher(String schoolyear, int week, String teacher){
+        API task =  new API();
+        task.delegate = this;
+        task.execute("teacher",schoolyear,week,teacher);
+    }
+
     @Override
     public void processFinish(ServerResponse response) {
         switch (response.endpoint){
@@ -163,18 +201,13 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 //auto login
                 prossessLogin(response);
                 break;
-            case SCHOOLYEARS:
-//                prossessSchoolyear(response);
-                break;
-            case CLASSES:
-//                prossessClasses(response);
-                break;
+            case TEACHER:
+            case ROOM:
             case CLASS:
-                prossessClass(response);
+                prossessTimetable(response);
                 break;
         }
     }
-
 
     protected void drawTimetable(){
         LinearLayout legend = getView().findViewById(R.id.legend);
@@ -423,9 +456,14 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
-    private void prossessClass(ServerResponse response){
+    /**
+     * Processes the API response. If there is no session it logs in.
+     * @param response The API response
+     */
+    private void prossessTimetable(ServerResponse response){
         try {
             String message;
+            Log.i("Login", String.valueOf(response.status));
             switch (response.status){
                 case 200:{
                     JSONArray dayarray = new JSONArray(response.response);//get the array containing the single days
@@ -440,9 +478,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 case 400:{
                     //no valid session
                     //login with saved credentials
-                    autologin();
+                    API.autologin(getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),this);
                     break;
                 }
+                case 404:
                 case 500:{
                     Toast.makeText(getContext(),"Error: "+new JSONObject(response.response).getString("error"), Toast.LENGTH_LONG).show();
                     break;
@@ -456,16 +495,32 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
-    private void autologin() {
-        System.out.println("Auto Logging in");
-        SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
-        if (prefs.contains("username") && prefs.contains("password")){
-            API task = new API();
-            task.delegate = this;
-            task.execute("login", prefs.getString("username", ""), prefs.getString("password", ""), prefs);
-        }else{
-            Toast.makeText(getContext(), "Log in first", Toast.LENGTH_LONG).show();
+    public void setData(Actions action,String data){
+        currentaction = action;
+        requestedData = data;
+        switch (action){
+            case CLASS:
+                getClass(getSchoolyear(),getWeekNumber(),data);
+                break;
+            case ROOM:
+                getRoom(getSchoolyear(),getWeekNumber(),data);
+                break;
+            case TEACHER:
+                getTeacher(getSchoolyear(),getWeekNumber(),data);
+                break;
         }
-
     }
+
+//    private void autologin() {
+//        System.out.println("Auto Logging in");
+//        SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
+//        if (prefs.contains("username") && prefs.contains("password")){
+//            API task = new API();
+//            task.delegate = this;
+//            task.execute("login", prefs.getString("username", ""), prefs.getString("password", ""), prefs);
+//        }else{
+//            Toast.makeText(getContext(), "Log in first", Toast.LENGTH_LONG).show();
+//        }
+//
+//    }
 }
