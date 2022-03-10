@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Search_Fragment">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_baseline_group_24"
+            android:text="@string/Class"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_outline_meeting_room_24"
+            android:text="@string/Room"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:drawableStart="@drawable/ic_baseline_person_24"
+            android:text="@string/Teacher"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"/>
+
+    </LinearLayout>
+
+    <EditText
+        android:imeOptions="actionSearch"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="5dp"
+        android:drawableStart="@drawable/ic_baseline_search_24"
+        android:lines="1"
+        android:maxLines="1"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Apply"
+        android:layout_margin="20dp"
+        android:layout_gravity="center_horizontal"/>
+
+</LinearLayout>

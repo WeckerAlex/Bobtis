@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name"></string>
+    <string name="Monday">Montag</string>
+    <string name="Tuesday">Dienstag</string>
+    <string name="Wednesday">Mitwoch</string>
+    <string name="Thursday">Donnerstag</string>
+    <string name="Friday">Freitag</string>
+    <string name="Teacher">Lehrer</string>
+    <string name="Class">Klasse</string>
+    <string name="Room">Raum</string>
+    <string name="Apply">Anwenden</string>
 </resources>

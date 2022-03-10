@@ -11,11 +11,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.navigation.NavigationView;
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
     private Fragment timetableFragment = new Timetable_fragment();
     private Fragment loginFragment = new Login_Fragment();
+    private Fragment searchFragment = new Search_Fragment();
 
 
     @Override
@@ -58,6 +61,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             login(prefs.getString("username",""),prefs.getString("password",""));
         }
         initNavbar();
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setIcon(R.drawable.ic_baseline_search_24);
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu,menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     protected void initNavbar(){
@@ -133,6 +145,16 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
+        }else {
+            FragmentContainerView fcv = findViewById(R.id.fragment_container_view);
+            Log.i("Fragment", String.valueOf(((Fragment)fcv.getFragment()).getTag()));
+            if (fcv.getFragment() instanceof Timetable_fragment){
+                switchFragment(searchFragment);
+            }
+            if (fcv.getFragment() instanceof Search_Fragment){
+                switchFragment(timetableFragment);
+            }
+
         }
         return super.onOptionsItemSelected(item);
     }

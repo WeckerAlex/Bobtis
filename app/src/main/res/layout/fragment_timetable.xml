@@ -4,119 +4,201 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:tag="timetable"
     tools:context=".Timetable_fragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         tools:context=".MainActivity">
 
         <LinearLayout
             android:id="@+id/titleBar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-
-            <Button
+            <ImageView
                 android:id="@+id/buttonPrevious"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:insetLeft="6dp"
-                android:insetRight="6dp"
-                android:text="Previous"
-                android:textSize="20sp" />
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:paddingHorizontal="10dp"
+                android:src="@drawable/ic_baseline_chevron_left_24"
+                android:contentDescription="Back"
+                />
 
             <TextView
                 android:id="@+id/DayTV"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Day"
+                android:text="Dayrgd gudgug\n dgdgurdurgu durdgdu"
+                android:autoSizeTextType="uniform"
                 app:layout_constraintBottom_toTopOf="@id/timetableLayout"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
-            <Button
+            <ImageView
                 android:id="@+id/buttonNext"
                 android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:paddingHorizontal="10dp"
+                android:src="@drawable/ic_baseline_chevron_right_24"
+                android:contentDescription="Next"
+                />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:insetLeft="6dp"
-                android:insetRight="6dp"
-                android:text="Next"
-                android:textSize="20sp" />
+                android:orientation="horizontal"
+                android:background="@color/black"
+                android:layout_marginStart="40dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:background="@color/white"
+                    android:layout_margin="1dp"
+                    android:maxLength="3"
+                    android:text="@string/Monday"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:background="@color/white"
+                    android:layout_margin="1dp"
+                    android:maxLength="3"
+                    android:text="@string/Tuesday"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:background="@color/white"
+                    android:layout_margin="1dp"
+                    android:maxLength="3"
+                    android:text="@string/Wednesday"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:background="@color/white"
+                    android:layout_margin="1dp"
+                    android:maxLength="3"
+                    android:text="@string/Thursday"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:background="@color/white"
+                    android:layout_margin="1dp"
+                    android:maxLength="3"
+                    android:text="@string/Friday"/>
+
+            </LinearLayout>
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/black"
+                android:fillViewport="true"
+                android:minHeight="600dp"
+                android:layout_marginTop="0dp"
+                app:layout_constrainedHeight="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/titleBar"
+                android:contentDescription="The timetable">
+
+                <LinearLayout
+                    android:id="@+id/timetableLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="fill"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/legend"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:background="@color/black"
+                        android:orientation="vertical"
+                        />
+
+                    <FrameLayout
+                        android:id="@+id/TLDay1"
+                        android:background="@color/timetable_background"
+                        android:layout_marginHorizontal="1dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical"/>
+
+                    <FrameLayout
+                        android:id="@+id/TLDay2"
+                        android:background="@color/timetable_background"
+                        android:layout_marginHorizontal="1dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical" />
+
+                    <FrameLayout
+                        android:id="@+id/TLDay3"
+                        android:background="@color/timetable_background"
+                        android:layout_marginHorizontal="1dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical" />
+
+                    <FrameLayout
+                        android:id="@+id/TLDay4"
+                        android:background="@color/timetable_background"
+                        android:layout_marginHorizontal="1dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical" />
+
+                    <FrameLayout
+                        android:id="@+id/TLDay5"
+                        android:background="@color/timetable_background"
+                        android:layout_marginHorizontal="1dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical" />
+
+                </LinearLayout>
+            </ScrollView>
+
         </LinearLayout>
 
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#2A3F8A"
-            android:fillViewport="true"
-            android:minHeight="600dp"
-            app:layout_constrainedHeight="false"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/titleBar">
-
-            <LinearLayout
-                android:id="@+id/timetableLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:gravity="fill"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:id="@+id/legend"
-                    android:layout_width="40dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    />
-
-                <FrameLayout
-                    android:id="@+id/TLDay1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"/>
-
-                <FrameLayout
-                    android:id="@+id/TLDay2"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical" />
-
-                <FrameLayout
-                    android:id="@+id/TLDay3"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical" />
-
-                <FrameLayout
-                    android:id="@+id/TLDay4"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical" />
-
-                <FrameLayout
-                    android:id="@+id/TLDay5"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical" />
-
-            </LinearLayout>
-        </ScrollView>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 </FrameLayout>

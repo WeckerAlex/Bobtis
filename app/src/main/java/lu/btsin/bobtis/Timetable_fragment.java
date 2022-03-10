@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TableRow;
@@ -112,14 +113,14 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     private void createButtonListener() {
-        ((Button) getView().findViewById(R.id.buttonNext)).setOnClickListener(new View.OnClickListener() {
+        ((ImageView) getView().findViewById(R.id.buttonNext)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 currentDate = currentDate.plusWeeks(1);
                 updateDate();
             }
         });
-        ((Button) getView().findViewById(R.id.buttonPrevious)).setOnClickListener(new View.OnClickListener() {
+        ((ImageView) getView().findViewById(R.id.buttonPrevious)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 currentDate = currentDate.minusWeeks(1);
@@ -182,10 +183,12 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
             tw.setGravity(Gravity.CENTER);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, hourHeight);
             params.weight = 1f;
+            params.setMargins(0,1,0,1);
             tw.setLines(3);
             tw.setLayoutParams(params);
             tw.setText(i+":00"+"\n-\n"+(i+1)+":00");
-            tw.setBackgroundResource(R.drawable.legend);
+            tw.setBackgroundColor(Color.parseColor("#FFFFFF"));
+            //tw.setBackgroundResource(R.drawable.legend);
             legend.addView(tw);
         }
     }
