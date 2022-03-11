@@ -49,11 +49,11 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     ListView listView;
     EditText searchedittext;
     private boolean logging_in = true;
-    private ArrayList<String> availableClasses;
-    private ArrayList<String> availableRooms;
-    private ArrayList<String> availableTeachers;
-    private int selectedCategory = R.id.classbutton;
-    MyAdapter adapter;
+    private static ArrayList<String[]> availableClasses;
+    private static ArrayList<String[]> availableRooms;
+    private static ArrayList<String[]> availableTeachers;
+    private static int selectedCategory = R.id.classbutton;
+    private static MyAdapter adapter;
 
 
     // TODO: Rename and change types of parameters
@@ -106,8 +106,9 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         classbutton.setOnClickListener(v -> buttonclick(availableClasses,v));
         roombutton.setOnClickListener(v -> buttonclick(availableRooms,v));
         teacherbutton.setOnClickListener(v -> buttonclick(availableTeachers,v));
-
-        adapter = new MyAdapter(getContext());
+        if (adapter == null){
+            adapter = new MyAdapter(getContext());
+        }
         listView.setAdapter(adapter);
         listView.setTextFilterEnabled(true);
         searchedittext.addTextChangedListener(new TextWatcher() {
@@ -136,7 +137,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         adapter.getFilter().filter("");
     }
 
-    private void buttonclick(ArrayList<String> data,View sender){
+    private void buttonclick(ArrayList<String[]> data,View sender){
         adapter.setData(data);
         searchedittext.setText("");
         selectedCategory = sender.getId();
@@ -172,9 +173,15 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     }
 
     private void initData(){
-        getTeachers("2021-2022");
-        getClasses("2021-2022");
-        getRooms("2021-2022");
+        if (availableTeachers == null || availableTeachers.isEmpty()){
+            getTeachers("2021-2022");
+        }
+        if (availableClasses == null || availableClasses.isEmpty()){
+            getClasses("2021-2022");
+        }
+        if (availableRooms == null || availableRooms.isEmpty()){
+            getRooms("2021-2022");
+        }
     }
 
     private void getTeachers(String schoolyear){
@@ -217,7 +224,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                     if (response.status == 400 && !logging_in){
                         //no valid session and not trying to log in
                         logging_in = true;
-                        API.autologin(getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),this);
+                        API.autologin(((MainActivity)getActivity()).currentUser ,this);
                     }
                 }
                 break;
@@ -233,16 +240,16 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                     Log.i("Response",response.endpoint.toString());
                     switch (response.endpoint){
                         case CLASSES:
-                            availableClasses = jsontoArrayList(json);
+                            availableClasses = jsontoArrayList(json,response.endpoint);
                             Log.i("Response", String.valueOf(availableClasses.size()));
                             adapter.setData(availableClasses);
                             break;
                         case ROOMS:
-                            availableRooms = jsontoArrayList(json);
+                            availableRooms = jsontoArrayList(json,response.endpoint);
                             Log.i("Response", String.valueOf(availableRooms.size()));
                             break;
                         case TEACHERS:
-                            availableTeachers = jsontoArrayList(json);
+                            availableTeachers = jsontoArrayList(json,response.endpoint);
                             Log.i("Response", String.valueOf(availableTeachers.size()));
                             break;
                     }
@@ -259,23 +266,38 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                     message = "Something went wrong";
                 }
             }
-            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
-    private ArrayList<String> jsontoArrayList(JSONArray json){
-        ArrayList<String> arr = new ArrayList<>();
+    private ArrayList<String[]> jsontoArrayList(JSONArray json, API.APIEndpoint endpoint){
+        ArrayList<String[]> arr = new ArrayList<>();
         try {
             for (int i = 0; i < json.length(); i++) {
                 String data = json.getString(i);
-                try {
-                    JSONObject jsonelement = new JSONObject(data);
-                    arr.add(jsonelement.getString("name")+" "+jsonelement.getString("firstname"));
-                }catch (JSONException e){
-                    //no json
-                    arr.add(data);
+                String[] entry = new String[2];
+                if (endpoint == API.APIEndpoint.TEACHERS){
+                    try {
+                        Log.i("jsontoArrayList",data);
+                        JSONObject jsonelement = new JSONObject(data);
+                        entry[0] = jsonelement.getString("code");//id
+                        if (!jsonelement.getString("name").isEmpty() || !jsonelement.getString("firstname").isEmpty()){
+                            entry[1] = jsonelement.getString("name") +" "+jsonelement.getString("firstname");//toString
+                        }else {
+                            entry[1] = entry[0];//toString
+                        }
+                        arr.add(entry);
+                    }catch (JSONException e){
+                        //no json
+                        Log.i("jsontoArrayList",data);
+                    }
+                }else{
+                    entry[0] = data;//id
+                    entry[1] = data;//toString
+                    arr.add(entry);
                 }
+
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -287,8 +309,8 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
     private class MyAdapter<String> extends BaseAdapter implements Filterable {
 
-        private ArrayList<String> data = new ArrayList<String>();
-        private ArrayList<String> datafiltered = new ArrayList<String>();
+        private ArrayList<String[]> data = new ArrayList<String[]>();
+        private ArrayList<String[]> datafiltered = new ArrayList<String[]>();
         private Context context;
 
 
@@ -296,7 +318,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
             this.context = context;
         }
 
-        public void setData(ArrayList<String> list) {
+        public void setData(ArrayList<String[]> list) {
             this.data = list;
             getFilter().filter("");
         }
@@ -325,10 +347,10 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
             tw.setPadding(1,0,1,0);
             tw.setLayoutParams(layoutParamsText);
-            tw.setText(datafiltered.get(position).toString());
+            tw.setText(((String[])datafiltered.get(position))[1].toString());
 
             LinearLayout ll = new LinearLayout(context);
-            ll.setOnClickListener(view -> display(tw.getText().toString()));
+            ll.setOnClickListener(view -> display(((String[])datafiltered.get(position))[0].toString()));
             ll.setGravity(Gravity.CLIP_HORIZONTAL);
             ll.setBackgroundResource(R.drawable.coursebackground);
             ((GradientDrawable) ll.getBackground()).setColor(Color.parseColor("#FFFF99"));
@@ -356,12 +378,12 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                         results.count = data.size();
                         results.values = data;
                     } else {//do the search
-                        ArrayList<String> resultsData = new ArrayList<>();
+                        ArrayList<String[]> resultsData = new ArrayList<String[]>();
                         java.lang.String searchStr = constraint.toString().toUpperCase();
                         for (int i = 0; i < data.size(); i++) {
-                            String entry = data.get(i);
+                            String entry = data.get(i)[1];
                             if (((java.lang.String)entry).toUpperCase().contains(((java.lang.String) constraint).toUpperCase())){
-                                resultsData.add(entry);
+                                resultsData.add(data.get(i));
                             }
                         }
                         results.count = resultsData.size();
@@ -372,7 +394,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
                 @Override
                 protected void publishResults(CharSequence constraint, FilterResults results) {
-                    datafiltered = (ArrayList<String>) results.values;
+                    datafiltered = (ArrayList<String[]>) results.values;
                     notifyDataSetChanged();
                 }
             };

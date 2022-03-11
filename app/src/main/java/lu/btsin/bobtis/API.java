@@ -29,44 +29,44 @@ class API extends AsyncTask {
     public AsyncResponse delegate = null;
     private static CookieManager cookieManager = null;
 
-    public static void saveloginData(String username, String password, SharedPreferences prefs) {
-        SharedPreferences.Editor edit = prefs.edit();
-        edit.putString("username", username);
-        edit.putString("password", password);
-        edit.apply();
-    }
+//    public static void saveloginData(String username, String password, SharedPreferences prefs) {
+//        SharedPreferences.Editor edit = prefs.edit();
+//        edit.putString("username", username);
+//        edit.putString("password", password);
+//        edit.apply();
+//    }
 
-    public static void saveloginData(SharedPreferences prefs, String jsonString){
-        Log.i("spclasse","classe");
-        try {
-            JSONObject json = new JSONObject(jsonString);
-            SharedPreferences.Editor edit = prefs.edit();
-            edit.putString("type", json.getString("type"));
-            edit.putString("name", json.getString("name"));
-            edit.putString("firstname", json.getString("firstname"));
-            edit.putString("username", json.getString("username"));
-            edit.putString("email", json.getString("email"));
-            if (json.has("id_student")){
-                edit.putString("id_student", json.getString("id_student"));
-            }
-            if (json.has("id_teacher")){
-                edit.putString("id_teacher", json.getString("id_teacher"));
-            }
-            if (json.has("id_staff")){
-                edit.putString("id_staff", json.getString("id_staff"));
-            }
-            edit.putString("classe", json.getString("classe"));
-            JSONArray jsonclasse = json.getJSONArray("rights");
-            ArrayList<String> rightsdata = new ArrayList<>();
-            for (int i = 0; i < jsonclasse.length(); i++) {
-                rightsdata.add(jsonclasse.getString(i));
-            }
-            edit.putString("rights", String.join(",",rightsdata));
-            edit.apply();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void saveloginDataAll(SharedPreferences prefs, String jsonString){
+//        Log.i("spclasse","classe");
+//        try {
+//            JSONObject json = new JSONObject(jsonString);
+//            SharedPreferences.Editor edit = prefs.edit();
+//            edit.putString("type", json.getString("type"));
+//            edit.putString("name", json.getString("name"));
+//            edit.putString("firstname", json.getString("firstname"));
+//            edit.putString("username", json.getString("username"));
+//            edit.putString("email", json.getString("email"));
+//            if (json.has("id_student")){
+//                edit.putString("id_student", json.getString("id_student"));
+//            }
+//            if (json.has("id_teacher")){
+//                edit.putString("id_teacher", json.getString("id_teacher"));
+//            }
+//            if (json.has("id_staff")){
+//                edit.putString("id_staff", json.getString("id_staff"));
+//            }
+//            edit.putString("classe", json.getString("classe"));
+//            JSONArray jsonclasse = json.getJSONArray("rights");
+//            ArrayList<String> rightsdata = new ArrayList<>();
+//            for (int i = 0; i < jsonclasse.length(); i++) {
+//                rightsdata.add(jsonclasse.getString(i));
+//            }
+//            edit.putString("rights", String.join(",",rightsdata));
+//            edit.apply();
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public enum APIEndpoint {
         LOGIN,
@@ -119,9 +119,8 @@ class API extends AsyncTask {
             in.close();
             return new ServerResponse(endpoint, status, content.toString());
         } catch (Exception e) {
-            System.out.println(e);
+            return new ServerResponse(endpoint,0,null);
         }
-        return null;
     }
 
     @Override
@@ -169,6 +168,7 @@ class API extends AsyncTask {
     protected void onPostExecute(Object sr) {
         super.onPostExecute(sr);
         if (delegate != null){
+            Log.i("onPostExecute", String.valueOf(sr == null));
             delegate.processFinish((ServerResponse) sr);
         }
     }
@@ -184,12 +184,12 @@ class API extends AsyncTask {
         return isr;
     }
 
-    public static void autologin(SharedPreferences prefs,AsyncResponse ar) {
+    public static void autologin(User user,AsyncResponse ar) {
         System.out.println("Auto Logging in");
-        if (prefs.contains("username") && prefs.contains("password")){
+        if (user != null){
             API task = new API();
             task.delegate = ar;
-            task.execute("login", prefs.getString("username", ""), prefs.getString("password", ""), prefs);
+            task.execute("login", user.getUsername(), user.getPassword());
         }
     }
 

@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,8 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private EditText etUsername;
+    private EditText etpassword;
 
     public Login_Fragment() {
         // Required empty public constructor
@@ -75,21 +78,29 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Button loginbutton = (Button) getView().findViewById(R.id.loginButton);
-        EditText etUsername = (EditText) getView().findViewById(R.id.usernameInput);
-        EditText etpassword = (EditText) getView().findViewById(R.id.passwordInput);
+        etUsername = (EditText) getView().findViewById(R.id.usernameInput);
+        etpassword = (EditText) getView().findViewById(R.id.passwordInput);
         loginbutton.setOnClickListener(v -> login(etUsername.getText().toString(),etpassword.getText().toString()));
     }
 
+    /**
+     * Logs in and saves the credentials
+     * @param username the users username
+     * @param password the password belonging to the username
+     */
     protected void login(String username, String password){
+        etUsername.setEnabled(false);
+        etpassword.setEnabled(false);
         API task =  new API();
         task.delegate = this;
         task.execute("login",username,password);
-        API.saveloginData(username,password,getContext().getSharedPreferences("UserPreferences",Context.MODE_PRIVATE));
+        //save the given credentials
+//        API.saveloginData(username,password,getContext().getSharedPreferences("UserPreferences",Context.MODE_PRIVATE));
     }
 
     @Override
     public void processFinish(ServerResponse response) {
-        System.out.println(response.status);
+        Log.i("prossessLogin_Fra", String.valueOf(response.status));
         switch (response.endpoint){
             case LOGIN:
                 prossessLogin(response);
@@ -104,25 +115,35 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
     private void prossessLogin(ServerResponse response){
         try {
             String message;
-            JSONObject json = new JSONObject(response.response);
             switch (response.status){
+                case 0:{
+                    message = "You are not connected to the internet";
+                    Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                    break;
+                }
                 case 200:{
-                    message = "You are logged in as "+json.getString("type");
-                    API.saveloginData(getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response);
+                    JSONObject json = new JSONObject(response.response);
+                    //API.saveloginDataAll(getActivity().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response);
+                    User user = new User(getActivity().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response,etpassword.getText().toString());
+                    ((MainActivity)getActivity()).currentUser = user;
+                    ((MainActivity)getActivity()).setNavbarHeader();
+                    ((MainActivity)getActivity()).displayClass(json.getString("classe"));
                     break;
                 }
                 case 500:
                 case 400:
                 case 404:
                 case 412:{
-                    message = "ErrorLogin "+response.status+": "+json.getString("error");
+                    JSONObject json = new JSONObject(response.response);
+                    Toast.makeText(getContext(), json.getString("error"), Toast.LENGTH_LONG).show();
                     break;
                 }
                 default:{
-                    message = "Something went wrong";
+                    Toast.makeText(getContext(),"Something went wrong" , Toast.LENGTH_LONG).show();
                 }
             }
-            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            etUsername.setEnabled(true);
+            etpassword.setEnabled(true);
         } catch (JSONException e) {
             e.printStackTrace();
         }

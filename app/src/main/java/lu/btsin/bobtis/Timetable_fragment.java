@@ -151,11 +151,11 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     break;
             }
         }else{
-            SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
-            if (prefs.contains("classe")){
-                Log.i("showtimetable","test");
+            User user = ((MainActivity)getActivity()).currentUser;
+            if (user != null && user.getClasse() != null){
+                Log.i("showtimetable",user.getClasse());
                 currentaction = Actions.CLASS;
-                requestedData = prefs.getString("classe","");
+                requestedData = user.getClasse();
                 updateDate();
             }
 
@@ -488,7 +488,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 case 400:{
                     //no valid session
                     //login with saved credentials
-                    API.autologin(getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),this);
+                    API.autologin(((MainActivity)getActivity()).currentUser,this);
                     break;
                 }
                 case 404:
