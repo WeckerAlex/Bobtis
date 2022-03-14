@@ -126,8 +126,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "password='" + password + '\'' +
-                ", role=" + role +
+                "  role=" + role +
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", name='" + name + '\'' +
@@ -172,5 +171,9 @@ public class User {
 
     public ArrayList<Right> getRights() {
         return rights;
+    }
+
+    public boolean has_Permission(Right right){
+        return (rights != null && rights.contains(right));
     }
 }

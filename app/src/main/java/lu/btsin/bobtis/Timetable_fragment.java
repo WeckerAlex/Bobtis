@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,9 +58,9 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     private LocalDate currentDate = LocalDate.now();
     private static Calendar calendar;
-    private int hourHeight = 200;
+    private int hourHeight = 150;
     private int startHour = 7;
-    private int endHour = 20;
+    private int endHour = 17;
     private Actions currentaction;
     private String requestedData;
 
@@ -242,14 +243,14 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
             if (daylessons.length()!=0){
                 //events recieved
                 JSONArray firstlesson = daylessons.getJSONArray(0);
-                if (firstlesson.length()!=0){
-                    if(firstlesson.getJSONObject(0).getBoolean("is_holiday")){
-                        //holiday
-                        insertHoliday(firstlesson.getJSONObject(0),day);
-                    }else{
-                        //school
-                        insertSchooldayEvents(daylessons,day);
-                    }
+                Log.i("insertDayEvents",day + " " + (firstlesson.length()));
+                //check if the first lesson is empty(if holidays it would not) and if it is not empty check if it is holiday
+                if (firstlesson.length()==0 || !firstlesson.getJSONObject(0).getBoolean("is_holiday")){
+                    //school
+                    insertSchooldayEvents(daylessons,day);
+                }else{
+                    //holiday
+                    insertHoliday(firstlesson.getJSONObject(0),day);
                 }
             }
         }catch (JSONException e) {
@@ -267,41 +268,89 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         HashMap<String,String> extensions = new HashMap<>();
         try {
             //loop through every timeslot starting at the last course
-            for (int hour=daylessons.length()-1; hour>=0; hour--){
+            for (int hour = daylessons.length()-1; hour>=0; hour--){
                 JSONArray concurrentarray = daylessons.getJSONArray(hour);//get the array containing all concurrent hours
                 //loop through the concurrent lessons
                 for (int lessoncount=concurrentarray.length()-1; lessoncount>=0; lessoncount--){
-                    JSONObject schoolclass = new JSONObject(concurrentarray.getString(lessoncount));
                     //update endtime if nessesary
-                    if (extensions.get(schoolclass.getString("id_lesson")) != null) {
+                    if (extensions.get(((JSONObject)concurrentarray.get(lessoncount)).getString("id_lesson")) != null) {
                         //this lesson does not end at the saved end
-                        schoolclass.put("end",extensions.get(schoolclass.getString("id_lesson")));
+                        ((JSONObject)concurrentarray.get(lessoncount)).put("end",extensions.get(((JSONObject)concurrentarray.get(lessoncount)).getString("id_lesson")));
                         //remove the extension
-                        extensions.remove(schoolclass.getString("id_lesson"));
+                        extensions.remove(((JSONObject)concurrentarray.get(lessoncount)).getString("id_lesson"));
                     }
                     //update hashmap
-                    if (schoolclass.getString("fi_parent_lesson") != "null"){
+                    if (((JSONObject)concurrentarray.get(lessoncount)).getString("fi_parent_lesson") != "null"){
                         //lesson belongs to other lesson
                         //save it into the extensions
-                        extensions.put(schoolclass.getString("fi_parent_lesson"),schoolclass.getString("end"));
+                        extensions.put(((JSONObject)concurrentarray.get(lessoncount)).getString("fi_parent_lesson"),((JSONObject)concurrentarray.get(lessoncount)).getString("end"));
                         //remove the extension so it does not get displayed twice
-                        concurrentarray.remove(lessoncount);
+                        ((JSONObject)concurrentarray.get(lessoncount)).put("hidden",true);
+//                        concurrentarray.remove(lessoncount);
                     }else {
                         //lesson has no parent
                         //draw it
-
-                        String classe = getStringfromJsonArray(schoolclass.getJSONArray("classe"));
-                        String teacher = getStringfromJsonArray(schoolclass.getJSONArray("teacher"));
-                        String subject = getStringfromJsonArray(schoolclass.getJSONArray("subject"));
-                        String room = getStringfromJsonArray(schoolclass.getJSONArray("room"));
-                        drawEvent1x4(day,schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room);
+                        String classe = getStringfromJsonArray(((JSONObject)concurrentarray.get(lessoncount)).getJSONArray("classe"));
+                        String teacher = getStringfromJsonArray(((JSONObject)concurrentarray.get(lessoncount)).getJSONArray("teacher"));
+                        String subject = getStringfromJsonArray(((JSONObject)concurrentarray.get(lessoncount)).getJSONArray("subject"));
+                        String room = getStringfromJsonArray(((JSONObject)concurrentarray.get(lessoncount)).getJSONArray("room"));
+//                        drawEvent2x2(day,schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room);
                     }
                 }
-
+                //Draw the timeslot
+                Log.i("timeslotcon", String.valueOf(daylessons));
+                drawTimeslot(concurrentarray,day);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void drawTimeslot(JSONArray concurrentarray, int dayIndex) throws JSONException {
+        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
+        FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
+        LinearLayout timeslotLayout = new LinearLayout(getContext());
+        timeslotLayout.setGravity(Gravity.CLIP_HORIZONTAL);
+        timeslotLayout.setOrientation(LinearLayout.HORIZONTAL);
+        int minstartheight = Integer.MAX_VALUE;
+        int maxEndTime = Integer.MIN_VALUE;
+        int startheight = 0;
+        for (int lessoncount = 0; lessoncount < concurrentarray.length(); lessoncount++){
+            Log.i("Timeslot", String.valueOf(concurrentarray.length()-1));
+            //get single classes
+            JSONObject schoolclass = new JSONObject(concurrentarray.getString(lessoncount));
+            //get the dimensions
+            int[] startime = Arrays.stream(schoolclass.getString("begin").split(":")).mapToInt(Integer::parseInt).toArray();
+            int[] endtime = Arrays.stream(schoolclass.getString("end").split(":")).mapToInt(Integer::parseInt).toArray();
+            startheight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
+            int endTime = Math.round((endtime[0]-startHour+endtime[1]/60f)*hourHeight);
+            minstartheight = Math.min(minstartheight,startheight);
+            maxEndTime = Math.max(maxEndTime,endTime);
+        }
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, maxEndTime-minstartheight);
+        layoutParams.topMargin = startheight;
+        timeslotLayout.setLayoutParams(layoutParams);
+        for (int lessoncount = 0; lessoncount < concurrentarray.length(); lessoncount++){
+            JSONObject schoolclass = new JSONObject(concurrentarray.getString(lessoncount));
+            if (!schoolclass.has("hidden")){
+                String classe = getStringfromJsonArray(schoolclass.getJSONArray("classe"));
+                String teacher = getStringfromJsonArray(schoolclass.getJSONArray("teacher"));
+                String subject = getStringfromJsonArray(schoolclass.getJSONArray("subject"));
+                String room = getStringfromJsonArray(schoolclass.getJSONArray("room"));
+                int[] endtime = Arrays.stream(schoolclass.getString("end").split(":")).mapToInt(Integer::parseInt).toArray();
+                int[] startime = Arrays.stream(schoolclass.getString("begin").split(":")).mapToInt(Integer::parseInt).toArray();
+                int ownStartHeight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
+                int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
+                LinearLayout mainLayout = drawEvent1x4(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight);
+                TableRow.LayoutParams layoutParamsEvent = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
+                layoutParamsEvent.weight = 1f;
+                mainLayout.setLayoutParams(layoutParamsEvent);
+                timeslotLayout.addView(mainLayout);
+            }
+
+        }
+        //add layout to day
+        dayLayout.addView(timeslotLayout);
     }
 
     protected void removeEvents(){
@@ -355,9 +404,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         dayLayout.addView(mainLayout);
     }
 
-    protected void drawEvent1x4(int dayIndex, String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb){
-        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
-        FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
+    protected LinearLayout drawEvent1x4(String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb,int parentOffset){
+//        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
+//        FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
+        Log.i("Timeslot", "drawEvent1x4");
         int[] startime = Arrays.stream(startTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int[] endtime = Arrays.stream(endTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int startheight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
@@ -372,17 +422,19 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         mainLayout.setBackgroundResource(R.drawable.coursebackground);
         ((GradientDrawable) mainLayout.getBackground()).setColor(Color.parseColor(color));
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
-        layoutParams.topMargin = startheight;
+        //set the vertical offset
+        //substract the offset the parent has to the top of the day
+        layoutParams.topMargin = startheight-parentOffset;
         mainLayout.setLayoutParams(layoutParams);
 
-        mainLayout.addView(createTextView(classText));
-        mainLayout.addView(createTextView(branchName));
-
-        mainLayout.addView(createTextView(teacherAbb));
-        mainLayout.addView(createTextView(roomAbb));
+        mainLayout.addView(createTextView(classText, (int) Math.ceil(classText.split("/", -1).length/2f)));
+        mainLayout.addView(createTextView(branchName, (int) Math.ceil(branchName.split("/", -1).length/2f)));
+        mainLayout.addView(createTextView(teacherAbb, (int) Math.ceil(teacherAbb.split("/", -1).length/2f)));
+        mainLayout.addView(createTextView(roomAbb, (int) Math.ceil(roomAbb.split("/", -1).length/2f)));
 
         mainLayout.setPadding(10,10,10,10);
-        dayLayout.addView(mainLayout);
+//        dayLayout.addView(mainLayout);
+        return mainLayout;
     }
 
     protected void drawHolidayEvent(int dayIndex, String color, String name){
@@ -429,6 +481,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         TextView tw = new TextView(getContext());
         tw.setText(text);
         tw.setTextSize(10f);
+        tw.setAutoSizeTextTypeUniformWithConfiguration(1,13,1, TypedValue.COMPLEX_UNIT_DIP);
         tw.setTypeface(null, Typeface.BOLD);
         tw.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);

@@ -52,17 +52,18 @@ public class MainActivity extends AppCompatActivity {
         }else{
             Log.i("User_loaded",currentUser.toString());
             //logging in at startup
+            //Todo create ar
             API.autologin(currentUser,null);
         }
         initNavbar();
         setNavbarHeader();
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setIcon(R.drawable.ic_baseline_search_24);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.search_menu,menu);
+        if (currentUser!=null && (currentUser.has_Permission(User.Right.SCHEDULE_CLASSES) || currentUser.has_Permission(User.Right.SCHEDULE_ROOMS) || currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS))){
+            getMenuInflater().inflate(R.menu.search_menu,menu);
+        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -84,21 +85,18 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                //TODO: adapt to new items
+                //TODO: check right to access
                 switch (item.getItemId()){
                     case R.id.personal_timetable: {
-                        Log.i("Menuit","sdg");
                         if (currentUser.getClasse()!=null){
                             displayClass(currentUser.getClasse());
                         }
                         break;
                     }
                     case R.id.nav_homework:{
-                        System.out.println("Homework");
                         break;
                     }
                     case R.id.nav_settings:{
-                        System.out.println("Settings");
                         break;
                     }
                     case R.id.nav_login:{
@@ -106,8 +104,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     default:{
-                        Log.i("Nav", String.valueOf(item.getTitle()));
-                        setTitle("requestedclass");
+                        break;
                     }
                 }
                 return false;
@@ -117,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setNavbarHeader(){
 //        if (prefs.contains("firstname") && prefs.contains("name") && prefs.contains("classe") && prefs.contains("username")){
-        if (currentUser.getFirstname() != null && currentUser.getName()!=null && currentUser.getUsername()!=null){
+        if (currentUser!= null && currentUser.getFirstname() != null && currentUser.getName()!=null && currentUser.getUsername()!=null){
             TextView nhn = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_name);
             nhn.setText(currentUser.getFirstname()+" "+currentUser.getName());
             TextView nhc = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_class);

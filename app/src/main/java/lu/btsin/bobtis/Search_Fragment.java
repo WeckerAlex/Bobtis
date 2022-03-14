@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
@@ -49,11 +50,14 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     ListView listView;
     EditText searchedittext;
     private boolean logging_in = true;
-    private static ArrayList<String[]> availableClasses;
-    private static ArrayList<String[]> availableRooms;
-    private static ArrayList<String[]> availableTeachers;
+    private static ArrayList<String[]> availableClasses = new ArrayList<>();
+    private static ArrayList<String[]> availableRooms = new ArrayList<>();
+    private static ArrayList<String[]> availableTeachers = new ArrayList<>();
     private static int selectedCategory = R.id.classbutton;
     private static MyAdapter adapter;
+    private Button classbutton;
+    private Button roombutton;
+    private Button teacherbutton;
 
 
     // TODO: Rename and change types of parameters
@@ -135,6 +139,17 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
             return false;
         });
         adapter.getFilter().filter("");
+        if (((MainActivity)getActivity()).currentUser != null){
+            if (!((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS)){
+                teacherbutton.setVisibility(View.GONE);
+            }
+            if (!((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_CLASSES)){
+                classbutton.setVisibility(View.GONE);
+            }
+            if (!((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_ROOMS)){
+                roombutton.setVisibility(View.GONE);
+            }
+        }
     }
 
     private void buttonclick(ArrayList<String[]> data,View sender){
@@ -145,7 +160,6 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     }
 
     private void display(String data){
-        Log.i("Segue", "display");
         switch (selectedCategory){
             case R.id.classbutton:{
                 ((MainActivity)getActivity()).displayClass(data);
@@ -173,15 +187,19 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     }
 
     private void initData(){
-        if (availableTeachers == null || availableTeachers.isEmpty()){
-            getTeachers("2021-2022");
+        Log.i("User", String.valueOf(((MainActivity)getActivity()).currentUser));
+        if (((MainActivity)getActivity()).currentUser != null){
+            if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS) && (availableTeachers == null || availableTeachers.isEmpty())){
+                getTeachers("2021-2022");
+            }
+            if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_CLASSES) && (availableClasses == null || availableClasses.isEmpty())){
+                getClasses("2021-2022");
+            }
+            if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_ROOMS) && (availableRooms == null || availableRooms.isEmpty())){
+                getRooms("2021-2022");
+            }
         }
-        if (availableClasses == null || availableClasses.isEmpty()){
-            getClasses("2021-2022");
-        }
-        if (availableRooms == null || availableRooms.isEmpty()){
-            getRooms("2021-2022");
-        }
+
     }
 
     private void getTeachers(String schoolyear){
@@ -242,15 +260,23 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                         case CLASSES:
                             availableClasses = jsontoArrayList(json,response.endpoint);
                             Log.i("Response", String.valueOf(availableClasses.size()));
-                            adapter.setData(availableClasses);
+                            if (adapter.is_data_set()){
+                                adapter.setData(availableClasses);
+                            }
                             break;
                         case ROOMS:
                             availableRooms = jsontoArrayList(json,response.endpoint);
                             Log.i("Response", String.valueOf(availableRooms.size()));
+                            if (adapter.is_data_set()){
+                                adapter.setData(availableRooms);
+                            }
                             break;
                         case TEACHERS:
                             availableTeachers = jsontoArrayList(json,response.endpoint);
                             Log.i("Response", String.valueOf(availableTeachers.size()));
+                            if (adapter.is_data_set()){
+                                adapter.setData(availableTeachers);
+                            }
                             break;
                     }
                     message = "Retrieved the "+response.endpoint;
@@ -313,6 +339,9 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         private ArrayList<String[]> datafiltered = new ArrayList<String[]>();
         private Context context;
 
+        public boolean is_data_set(){
+            return data.isEmpty();
+        }
 
         public MyAdapter(Context context) {
             this.context = context;
