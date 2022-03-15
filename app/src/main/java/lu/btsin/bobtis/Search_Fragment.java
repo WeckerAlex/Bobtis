@@ -43,10 +43,6 @@ import java.util.ArrayList;
  */
 public class Search_Fragment extends Fragment implements AsyncResponse  {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
     ListView listView;
     EditText searchedittext;
     private boolean logging_in = true;
@@ -59,30 +55,12 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     private Button roombutton;
     private Button teacherbutton;
 
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     public Search_Fragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Search_Fragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static Search_Fragment newInstance(String param1, String param2) {
         Search_Fragment fragment = new Search_Fragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -104,12 +82,14 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         initData();
         searchedittext = (EditText) getView().findViewById(R.id.searchEditText);
         listView = (ListView) getView().findViewById(R.id.resultsView);
-        Button classbutton = (Button) getView().findViewById(R.id.classbutton);
-        Button roombutton = (Button) getView().findViewById(R.id.roombutton);
-        Button teacherbutton = (Button) getView().findViewById(R.id.teacherbutton);
+        classbutton = (Button) getView().findViewById(R.id.classbutton);
+        roombutton = (Button) getView().findViewById(R.id.roombutton);
+        teacherbutton = (Button) getView().findViewById(R.id.teacherbutton);
+
         classbutton.setOnClickListener(v -> buttonclick(availableClasses,v));
         roombutton.setOnClickListener(v -> buttonclick(availableRooms,v));
         teacherbutton.setOnClickListener(v -> buttonclick(availableTeachers,v));
+
         if (adapter == null){
             adapter = new MyAdapter(getContext());
         }
@@ -139,6 +119,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
             return false;
         });
         adapter.getFilter().filter("");
+        //disable category if the user has not the permission
         if (((MainActivity)getActivity()).currentUser != null){
             if (!((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS)){
                 teacherbutton.setVisibility(View.GONE);
@@ -156,11 +137,15 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         adapter.setData(data);
         searchedittext.setText("");
         selectedCategory = sender.getId();
-
     }
 
+    /**
+     * This function gets called after an item has been selected
+     * @param data the lable on the selected item
+     */
     private void display(String data){
         switch (selectedCategory){
+            //switch on the currently selected category
             case R.id.classbutton:{
                 ((MainActivity)getActivity()).displayClass(data);
                 break;
@@ -189,14 +174,14 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     private void initData(){
         Log.i("User", String.valueOf(((MainActivity)getActivity()).currentUser));
         if (((MainActivity)getActivity()).currentUser != null){
-            if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS) && (availableTeachers == null || availableTeachers.isEmpty())){
-                getTeachers("2021-2022");
-            }
             if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_CLASSES) && (availableClasses == null || availableClasses.isEmpty())){
                 getClasses("2021-2022");
             }
             if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_ROOMS) && (availableRooms == null || availableRooms.isEmpty())){
                 getRooms("2021-2022");
+            }
+            if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS) && (availableTeachers == null || availableTeachers.isEmpty())){
+                getTeachers("2021-2022");
             }
         }
 

@@ -8,4 +8,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="timetable_background">#4150b5</color>
+    <color name="strikethrough">#FF00</color>
 </resources>

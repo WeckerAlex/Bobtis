@@ -1,17 +1,13 @@
 package lu.btsin.bobtis;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -21,12 +17,6 @@ import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.navigation.NavigationView;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -94,9 +84,15 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     case R.id.nav_homework:{
+                        Log.i("onNavigationItemSelected","nav_homework");
+                        break;
+                    }
+                    case R.id.nav_absence:{
+                        new PopupFragment().show(getSupportFragmentManager(),null);
                         break;
                     }
                     case R.id.nav_settings:{
+                        Log.i("Settings","drg");
                         break;
                     }
                     case R.id.nav_login:{
@@ -134,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
         DrawerLayout dl = findViewById(R.id.my_drawer_layout);
         dl.closeDrawer(GravityCompat.START);
     }
+
 
     // override the onOptionsItemSelected()
     // function to implement
@@ -173,5 +170,4 @@ public class MainActivity extends AppCompatActivity {
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.CLASS,classe);
         switchFragment(timetableFragment);
     }
-
 }

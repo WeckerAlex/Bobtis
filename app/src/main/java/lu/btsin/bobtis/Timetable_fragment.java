@@ -2,7 +2,9 @@ package lu.btsin.bobtis;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -11,6 +13,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StrikethroughSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -33,11 +41,14 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -46,10 +57,6 @@ import java.util.Locale;
  */
 public class Timetable_fragment extends Fragment implements AsyncResponse {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
     public enum Actions {
         CLASS,
         ROOM,
@@ -64,10 +71,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private Actions currentaction;
     private String requestedData;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     public Timetable_fragment() {
         // Required empty public constructor
     }
@@ -76,33 +79,23 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment Timetable_fragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static Timetable_fragment newInstance(String param1, String param2) {
         Timetable_fragment fragment = new Timetable_fragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        Log.i("setData","action" + " " + "data");
         return inflater.inflate(R.layout.fragment_timetable, container, false);
     }
 
@@ -169,7 +162,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         if (currentDate.getMonth().getValue()<8){
             currentSchoolyear--;
         }
-        return currentSchoolyear+"-"+ (currentSchoolyear+1);
+        return currentSchoolyear + "-" + (currentSchoolyear+1);
     }
 
     private int getWeekNumber(){
@@ -341,7 +334,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 int[] startime = Arrays.stream(schoolclass.getString("begin").split(":")).mapToInt(Integer::parseInt).toArray();
                 int ownStartHeight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
                 int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
-                LinearLayout mainLayout = drawEvent1x4(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight);
+                LinearLayout mainLayout = drawEvent1x4(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight,schoolclass.getBoolean("is_online"));
                 TableRow.LayoutParams layoutParamsEvent = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
                 layoutParamsEvent.weight = 1f;
                 mainLayout.setLayoutParams(layoutParamsEvent);
@@ -404,7 +397,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         dayLayout.addView(mainLayout);
     }
 
-    protected LinearLayout drawEvent1x4(String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb,int parentOffset){
+    protected LinearLayout drawEvent1x4(String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb,int parentOffset,boolean is_online){
 //        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
 //        FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
         Log.i("Timeslot", "drawEvent1x4");
@@ -418,6 +411,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         //create new entry
         LinearLayout mainLayout = new LinearLayout(getContext());
         mainLayout.setGravity(Gravity.CLIP_VERTICAL);
+        mainLayout.setWeightSum(4f);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
         mainLayout.setBackgroundResource(R.drawable.coursebackground);
         ((GradientDrawable) mainLayout.getBackground()).setColor(Color.parseColor(color));
@@ -427,10 +421,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         layoutParams.topMargin = startheight-parentOffset;
         mainLayout.setLayoutParams(layoutParams);
 
-        mainLayout.addView(createTextView(classText, (int) Math.ceil(classText.split("/", -1).length/2f)));
-        mainLayout.addView(createTextView(branchName, (int) Math.ceil(branchName.split("/", -1).length/2f)));
-        mainLayout.addView(createTextView(teacherAbb, (int) Math.ceil(teacherAbb.split("/", -1).length/2f)));
-        mainLayout.addView(createTextView(roomAbb, (int) Math.ceil(roomAbb.split("/", -1).length/2f)));
+        mainLayout.addView(createTextView(classText, (int) Math.ceil(classText.split("/", -1).length/2f),false));
+        mainLayout.addView(createTextView(branchName, (int) Math.ceil(branchName.split("/", -1).length/2f),false));
+        mainLayout.addView(createTextView(teacherAbb, (int) Math.ceil(teacherAbb.split("/", -1).length/2f),false));
+        mainLayout.addView(createTextView(roomAbb, (int) Math.ceil(roomAbb.split("/", -1).length/2f),false));
 
         mainLayout.setPadding(10,10,10,10);
 //        dayLayout.addView(mainLayout);
@@ -474,17 +468,43 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     protected TextView createTextView(String text){
-        return createTextView(text,1);
+        return createTextView(text,1,false);
     }
 
-    protected TextView createTextView(String text,int lines){
+    protected TextView createTextView(String text,int lines,boolean add_camera){
         TextView tw = new TextView(getContext());
-        tw.setText(text);
         tw.setTextSize(10f);
         tw.setAutoSizeTextTypeUniformWithConfiguration(1,13,1, TypedValue.COMPLEX_UNIT_DIP);
         tw.setTypeface(null, Typeface.BOLD);
         tw.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        if (add_camera){
+            tw.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_outline_videocam_24, 0, 0, 0);
+        }
+        tw.setText(text, TextView.BufferType.SPANNABLE);
+        Spannable spannable = (Spannable) tw.getText();
+
+        Pattern pattern = Pattern.compile("\\*(.*)\\*");
+        SpannableStringBuilder ssb = new SpannableStringBuilder( tw.getText() );
+        if( pattern != null ){
+            Matcher matcher = pattern.matcher( tw.getText() );
+            int matchesSoFar = 0;
+            while( matcher.find() )
+            {
+                int start = matcher.start() - (matchesSoFar * 2);
+                int end = matcher.end() - (matchesSoFar * 2);
+                CharacterStyle span0 = new ForegroundColorSpan(getResources().getColor(R.color.strikethrough));
+                StrikethroughSpan span = new StrikethroughSpan();
+                ssb.setSpan( span, start + 1, end - 1, 0 );
+                ssb.setSpan( span0, start + 1, end - 1, 0 );
+                ssb.delete(start, start + 1);
+                ssb.delete(end - 2, end -1);
+                matchesSoFar++;
+            }
+        }
+
+        tw.setText(ssb);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
         params.weight = 1f;
         tw.setLines(lines);
         tw.setLayoutParams(params);
@@ -561,6 +581,14 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     public void setData(Actions action,String data){
         currentaction = action;
         requestedData = data;
+        try {
+            //try to remove all the events from the timetable
+            removeEvents();
+        }catch (NullPointerException npe){
+            Log.e("setData",npe.toString());
+        }
+
+        Log.i("setData",action + " " + data);
         switch (action){
             case CLASS:
                 getClass(getSchoolyear(),getWeekNumber(),data);
@@ -573,17 +601,4 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 break;
         }
     }
-
-//    private void autologin() {
-//        System.out.println("Auto Logging in");
-//        SharedPreferences prefs = getContext().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
-//        if (prefs.contains("username") && prefs.contains("password")){
-//            API task = new API();
-//            task.delegate = this;
-//            task.execute("login", prefs.getString("username", ""), prefs.getString("password", ""), prefs);
-//        }else{
-//            Toast.makeText(getContext(), "Log in first", Toast.LENGTH_LONG).show();
-//        }
-//
-//    }
 }
