@@ -3,8 +3,11 @@ package lu.btsin.bobtis;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -88,7 +91,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     case R.id.nav_absence:{
-                        new PopupFragment().show(getSupportFragmentManager(),null);
+                        //LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                        //View layoutt = inflater.inflate(R.layout.fragment_popup,navigationView);
+
+                        new PopupFragment().show(getSupportFragmentManager(),"");
                         break;
                     }
                     case R.id.nav_settings:{
@@ -103,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                 }
+                DrawerLayout dl = findViewById(R.id.my_drawer_layout);
+                dl.closeDrawer(GravityCompat.START);
                 return false;
             }
         });
@@ -127,8 +135,6 @@ public class MainActivity extends AppCompatActivity {
                 .setReorderingAllowed(true)
                 .addToBackStack(null) // name can be null
                 .commit();
-        DrawerLayout dl = findViewById(R.id.my_drawer_layout);
-        dl.closeDrawer(GravityCompat.START);
     }
 
 

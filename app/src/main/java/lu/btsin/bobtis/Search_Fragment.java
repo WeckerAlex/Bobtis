@@ -50,7 +50,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     private static ArrayList<String[]> availableRooms = new ArrayList<>();
     private static ArrayList<String[]> availableTeachers = new ArrayList<>();
     private static int selectedCategory = R.id.classbutton;
-    private static MyAdapter adapter;
+    private static ListAdapter adapter;
     private Button classbutton;
     private Button roombutton;
     private Button teacherbutton;
@@ -91,7 +91,36 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         teacherbutton.setOnClickListener(v -> buttonclick(availableTeachers,v));
 
         if (adapter == null){
-            adapter = new MyAdapter(getContext());
+            //adapter = new MyAdapter(getContext());
+            adapter = new ListAdapter() {
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    TextView tw = new TextView(getContext());
+                    LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
+                    layoutParamsText.setMargins(1,1,1,1);
+                    layoutParamsText.weight = 1;
+
+                    tw.setPadding(1,0,1,0);
+                    tw.setLayoutParams(layoutParamsText);
+                    tw.setText(((String[])getDatafiltered().get(position))[1].toString());
+
+                    LinearLayout ll = new LinearLayout(getContext());
+                    ll.setOnClickListener(view -> display(((String[])getDatafiltered().get(position))[0].toString()));
+                    ll.setGravity(Gravity.CLIP_HORIZONTAL);
+                    ll.setBackgroundResource(R.drawable.coursebackground);
+                    ((GradientDrawable) ll.getBackground()).setColor(Color.parseColor("#FFFF99"));
+                    TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
+                    ll.setPadding(10,0,10,0);
+                    ll.setLayoutParams(layoutParams);
+
+                    ll.setOrientation(LinearLayout.HORIZONTAL);
+                    ll.addView(tw);
+                    Button button = new Button(getContext());
+                    button.setText("Add to favorites");
+                    ll.addView(button);
+                    return ll;
+                }
+            };
         }
         listView.setAdapter(adapter);
         listView.setTextFilterEnabled(true);
@@ -318,7 +347,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
 
 
-    private class MyAdapter<String> extends BaseAdapter implements Filterable {
+    /*private class MyAdapter<String> extends BaseAdapter implements Filterable {
 
         private ArrayList<String[]> data = new ArrayList<String[]>();
         private ArrayList<String[]> datafiltered = new ArrayList<String[]>();
@@ -413,5 +442,5 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                 }
             };
         }
-    }
+    }*/
 }
