@@ -13,8 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Adapter;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -24,11 +22,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -41,16 +39,19 @@ public class PopupFragment extends DialogFragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static DrawerLayout dl;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
     private View view;
     private ArrayList<String> data = new ArrayList<>();
+    private static ListAdapter adapter;
 
-    public PopupFragment() {
+    public PopupFragment(DrawerLayout drawerLayout) {
+        this.dl = drawerLayout;
         // Required empty public constructor
-        for (int i = 0; i < 40; i++) {
+        for (int i = 0; i < 50; i++) {
             data.add(String.valueOf(i));
         }
     }
@@ -65,7 +66,7 @@ public class PopupFragment extends DialogFragment {
      */
     // TODO: Rename and change types and number of parameters
     public static PopupFragment newInstance(String param1, String param2) {
-        PopupFragment fragment = new PopupFragment();
+        PopupFragment fragment = new PopupFragment(dl);
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -101,14 +102,17 @@ public class PopupFragment extends DialogFragment {
 //        alertDialogBuilder.setIcon(R.drawable.ic_bobtis);
         view = getLayoutInflater().inflate(R.layout.fragment_popup, null);
         alertDialogBuilder.setView(view);
+
         alertDialogBuilder.setPositiveButton("Ok",  new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // on success
                 ListView list = (ListView)(getView().findViewById(R.id.studentList));
                 ListAdapter ba = (ListAdapter)list.getAdapter();
+                ba.setData(data);
                 Log.i("Popup", String.valueOf(ba.getCount()));
-                //dialog.dismiss();
+                dialog.dismiss();
+                Log.i("Popup", String.valueOf(which));
             }
         });
         return alertDialogBuilder.create();
@@ -147,9 +151,13 @@ public class PopupFragment extends DialogFragment {
         display.getSize(size);
         // Set the width of the dialog proportional to 75% of the screen width
         window.setLayout((int) (size.x * 0.85), (int) (size.y * 0.88));
-
         // Call super onResume after sizing
         super.onResume();
+        Log.i("initinit","Data: "+data.toString());
+        if (!adapter.isEmpty()){
+            Log.i("initinit","Data: "+adapter.getItem(1));
+        }
+        adapter.setData(data);
 
     }
 
@@ -167,43 +175,53 @@ public class PopupFragment extends DialogFragment {
 //    }
 
     public void init(){
+        Log.i("initinit","initinit");
         ListView list = getView().findViewById(R.id.studentList);
-        ListAdapter adapter = new ListAdapter() {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                TextView tw = new TextView(getContext());
-                LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
-                layoutParamsText.setMargins(1,1,1,1);
-                layoutParamsText.weight = 1;
+        if (adapter == null){
+            adapter = new ListAdapter<String>() {
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    Log.i("initinit","Drawing " + position);
+                    TextView tw = new TextView(getContext());
+                    LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(50, 50);
+                    layoutParamsText.setMargins(1,1,1,1);
+                    layoutParamsText.weight = 1;
 
-                tw.setPadding(1,0,1,0);
-                tw.setLayoutParams(layoutParamsText);
-                tw.setText(data.get(position));
+                    tw.setPadding(1,0,1,0);
+                    tw.setLayoutParams(layoutParamsText);
+                    tw.setText(data.get(position));
 
-                LinearLayout ll = new LinearLayout(getContext());
-                //ll.setOnClickListener(view -> display(data.get(i)));
-                ll.setGravity(Gravity.CLIP_HORIZONTAL);
-                ll.setBackgroundResource(R.drawable.coursebackground);
-                ((GradientDrawable) ll.getBackground()).setColor(Color.parseColor("#FFFF99"));
-                TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
-                ll.setPadding(10,0,10,0);
-                ll.setLayoutParams(layoutParams);
+                    LinearLayout ll = new LinearLayout(getContext());
+                    ll.setOnClickListener(view -> Log.i("initinit","Pressed "+position));
+                    ll.setGravity(Gravity.CLIP_HORIZONTAL);
+                    ll.setBackgroundResource(R.drawable.coursebackground);
+                    ((GradientDrawable) ll.getBackground()).setColor(Color.parseColor("#FFFF99"));
+                    TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(200, 50);
+                    ll.setPadding(10,0,10,0);
+                    ll.setLayoutParams(layoutParams);
 
-                ll.setOrientation(LinearLayout.HORIZONTAL);
-                ll.addView(tw);
-                Button button = new Button(getContext());
-                button.setText("Add to favorites");
-                ll.addView(button);
-                return ll;
-            }
-        };
+                    ll.setOrientation(LinearLayout.HORIZONTAL);
+                    ll.addView(tw);
+                    Button button = new Button(getContext());
+                    button.setText("VTT");
+                    ll.addView(button);
+                    return ll;
+                }
+
+                @Override
+                public boolean filterEntry(String entry, CharSequence constraint) {
+                    Log.i("filterEntry",entry+" - "+constraint);
+                    return ((entry).toUpperCase().contains(((String) constraint).toUpperCase()));
+                }
+            };
+        }
         list.setAdapter(adapter);
+        Log.i("initinit", String.valueOf(list));
+        Log.i("initinit", "Getclass " + (list.getAdapter().getCount()));
         adapter.setData(data);
         list.setTextFilterEnabled(true);
-        adapter.getFilter().filter("");
-        view.getRootView().setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 200));
-        view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 200));
-        list.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 200));
+        adapter.getFilter().filter("1");
+        Log.i("initinit", "Displayed: "+(adapter.getDatafiltered().size()));
     }
 
 }

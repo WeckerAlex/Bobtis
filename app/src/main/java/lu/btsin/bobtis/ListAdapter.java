@@ -1,6 +1,5 @@
 package lu.btsin.bobtis;
 
-import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,10 +9,10 @@ import android.widget.Filterable;
 
 import java.util.ArrayList;
 
-public abstract class ListAdapter<String> extends BaseAdapter implements Filterable {
+public abstract class ListAdapter<T> extends BaseAdapter implements Filterable {
 
-    private ArrayList<String[]> data = new ArrayList<String[]>();
-    private ArrayList<String[]> datafiltered = new ArrayList<String[]>();
+    private ArrayList<T> data = new ArrayList<T>();
+    private ArrayList<T> datafiltered = new ArrayList<T>();
 
     public boolean is_data_set(){
         return data.isEmpty();
@@ -23,57 +22,38 @@ public abstract class ListAdapter<String> extends BaseAdapter implements Filtera
 
     }
 
-    public ArrayList<String[]> getDatafiltered() {
+    public ArrayList<T> getDatafiltered() {
         return datafiltered;
     }
 
-    public void setData(ArrayList<String[]> list) {
+    public void setData(ArrayList<T> list) {
+        Log.i("initinit","setData");
         this.data = list;
         getFilter().filter("");
     }
 
     @Override
     public int getCount() {
+        Log.i("initinit","getCount " + datafiltered.size());
         return datafiltered.size();
     }
 
     @Override
     public Object getItem(int i) {
+        Log.i("initinit","getItem " + i);
         return datafiltered.get(i);
     }
 
     @Override
     public long getItemId(int i) {
+        Log.i("initinit","getItemId " + i);
         return i;
     }
 
     @Override
-    public abstract View getView(final int position, View convertView, ViewGroup parent);/* {
-        TextView tw = new TextView(getContext());
-        LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
-        layoutParamsText.setMargins(1,1,1,1);
-        layoutParamsText.weight = 1;
+    public abstract View getView(final int position, View convertView, ViewGroup parent);
 
-        tw.setPadding(1,0,1,0);
-        tw.setLayoutParams(layoutParamsText);
-        tw.setText(((String[])datafiltered.get(position))[1].toString());
-
-        LinearLayout ll = new LinearLayout(context);
-        ll.setOnClickListener(view -> display(((String[])datafiltered.get(position))[0].toString()));
-        ll.setGravity(Gravity.CLIP_HORIZONTAL);
-        ll.setBackgroundResource(R.drawable.coursebackground);
-        ((GradientDrawable) ll.getBackground()).setColor(Color.parseColor("#FFFF99"));
-        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
-        ll.setPadding(10,0,10,0);
-        ll.setLayoutParams(layoutParams);
-
-        ll.setOrientation(LinearLayout.HORIZONTAL);
-        ll.addView(tw);
-        Button button = new Button(context);
-        button.setText("Add to favorites");
-        ll.addView(button);
-        return ll;
-    }*/
+    public abstract boolean filterEntry(T entry, CharSequence constraint);
 
     @Override
     public Filter getFilter() {
@@ -81,30 +61,37 @@ public abstract class ListAdapter<String> extends BaseAdapter implements Filtera
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults results = new FilterResults();
-                Log.i("Filter", (java.lang.String) constraint);
                 if (constraint == null || constraint.length() == 0) {
                     //no constraint given, just return all the data. (no search)
                     results.count = data.size();
                     results.values = data;
                 } else {//do the search
-                    ArrayList<String[]> resultsData = new ArrayList<String[]>();
-                    java.lang.String searchStr = constraint.toString().toUpperCase();
+                    ArrayList<T> resultsData = new ArrayList<T>();
+                    //java.lang.String searchStr = constraint.toString().toUpperCase();
                     for (int i = 0; i < data.size(); i++) {
-                        String entry = data.get(i)[1];
-                        if (((java.lang.String)entry).toUpperCase().contains(((java.lang.String) constraint).toUpperCase())){
+//                        String entry = data.get(i)[1];
+//                        if (((java.lang.String)entry).toUpperCase().contains(((java.lang.String) constraint).toUpperCase())){
+//                            resultsData.add(data.get(i));
+//                        }
+//                        Log.i("initinit","fintering "+ constraint);
+                        if (filterEntry(data.get(i),constraint)){
                             resultsData.add(data.get(i));
+//                            Log.i("initinit","successful "+ constraint);
                         }
                     }
                     results.count = resultsData.size();
                     results.values = resultsData;
+                    Log.i("initinit","end "+ resultsData.size());
                 }
                 return results;
             }
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                datafiltered = (ArrayList<String[]>) results.values;
+                datafiltered = (ArrayList<T>) results.values;
+                Log.i("initinit","publishResults "+ results.values.toString());
                 notifyDataSetChanged();
+                Log.i("initinit","publishResultc "+ results.values.toString());
             }
         };
     }

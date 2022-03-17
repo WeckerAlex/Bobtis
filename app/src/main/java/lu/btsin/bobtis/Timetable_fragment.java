@@ -70,6 +70,13 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private int endHour = 17;
     private Actions currentaction;
     private String requestedData;
+    private TextView tv1header;
+    private TextView tv2header;
+    private TextView tv3header;
+    private TextView tv4header;
+    private TextView tv5header;
+
+    private boolean weekMode = true;
 
     public Timetable_fragment() {
         // Required empty public constructor
@@ -102,6 +109,12 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        tv1header = getView().findViewById(R.id.TLDay1header);
+        tv2header = getView().findViewById(R.id.TLDay2header);
+        tv3header = getView().findViewById(R.id.TLDay3header);
+        tv4header = getView().findViewById(R.id.TLDay4header);
+        tv5header = getView().findViewById(R.id.TLDay5header);
+
         calendar = Calendar.getInstance(Locale.FRANCE);
         calendar.setFirstDayOfWeek(Calendar.MONDAY);
         Log.i("Calendar","created");
@@ -125,14 +138,42 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 updateDate();
             }
         });
+        tv1header.setOnClickListener(view -> toggleDayWeek(view.getId()));
+        tv2header.setOnClickListener(view -> toggleDayWeek(view.getId()));
+        tv3header.setOnClickListener(view -> toggleDayWeek(view.getId()));
+        tv4header.setOnClickListener(view -> toggleDayWeek(view.getId()));
+        tv5header.setOnClickListener(view -> toggleDayWeek(view.getId()));
+    }
+    private void toggleDayWeek(int tvId){
+        weekMode = !weekMode;
+
+        FrameLayout DL1 = getView().findViewById(R.id.TLDay1);
+        FrameLayout DL2 = getView().findViewById(R.id.TLDay2);
+        FrameLayout DL3 = getView().findViewById(R.id.TLDay3);
+        FrameLayout DL4 = getView().findViewById(R.id.TLDay4);
+        FrameLayout DL5 = getView().findViewById(R.id.TLDay5);
+        tv1header.setVisibility((tvId == R.id.TLDay1header || weekMode) ? View.VISIBLE : View.GONE);
+        DL1.setVisibility((tvId == R.id.TLDay1header || weekMode) ? View.VISIBLE : View.GONE);
+        tv2header.setVisibility((tvId == R.id.TLDay2header || weekMode) ? View.VISIBLE : View.GONE);
+        DL2.setVisibility((tvId == R.id.TLDay2header || weekMode) ? View.VISIBLE : View.GONE);
+        tv3header.setVisibility((tvId == R.id.TLDay3header || weekMode) ? View.VISIBLE : View.GONE);
+        DL3.setVisibility((tvId == R.id.TLDay3header || weekMode) ? View.VISIBLE : View.GONE);
+        tv4header.setVisibility((tvId == R.id.TLDay4header || weekMode) ? View.VISIBLE : View.GONE);
+        DL4.setVisibility((tvId == R.id.TLDay4header || weekMode) ? View.VISIBLE : View.GONE);
+        tv5header.setVisibility((tvId == R.id.TLDay5header || weekMode) ? View.VISIBLE : View.GONE);
+        DL5.setVisibility((tvId == R.id.TLDay5header || weekMode) ? View.VISIBLE : View.GONE);
     }
 
     private void updateDate(){
         Log.i("Calendar","updateDate");
+        //remove previously displayed events
         removeEvents();
+        //update the week description
         ((TextView)getView().findViewById(R.id.DayTV)).setText(getWeekDescription());
         Log.i("currentaction", String.valueOf(currentaction));
+        //request the new data
         if (currentaction != null){
+            //The action is defined
             switch (currentaction){
                 case CLASS:
                     getClass(getSchoolyear(),getWeekNumber(),requestedData);
@@ -145,15 +186,28 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     break;
             }
         }else{
+            //no action is defined
             User user = ((MainActivity)getActivity()).currentUser;
             if (user != null && user.getClasse() != null){
+                //if user and classe are defined request the users class (default action)
                 Log.i("showtimetable",user.getClasse());
                 currentaction = Actions.CLASS;
                 requestedData = user.getClasse();
+                //repeat the request
                 updateDate();
             }
-
         }
+        LocalDate tempdate = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        tv1header.setText(tempdate.getDayOfMonth()+".\n"+ getResources().getString(R.string.Monday));
+        tempdate = tempdate.plusDays(1);
+        tv2header.setText(tempdate.getDayOfMonth()+".\n"+ getResources().getString(R.string.Tuesday));
+        tempdate = tempdate.plusDays(1);
+        tv3header.setText(tempdate.getDayOfMonth()+".\n"+ getResources().getString(R.string.Wednesday));
+        tempdate = tempdate.plusDays(1);
+        tv4header.setText(tempdate.getDayOfMonth()+".\n"+ getResources().getString(R.string.Thursday));
+        tempdate = tempdate.plusDays(1);
+        tv5header.setText(tempdate.getDayOfMonth()+".\n"+ getResources().getString(R.string.Friday));
+
     }
 
     private String getSchoolyear(){
@@ -334,7 +388,12 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 int[] startime = Arrays.stream(schoolclass.getString("begin").split(":")).mapToInt(Integer::parseInt).toArray();
                 int ownStartHeight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
                 int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
-                LinearLayout mainLayout = drawEvent1x4(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight,schoolclass.getBoolean("is_online"));
+                LinearLayout mainLayout;
+                if (weekMode){
+                    mainLayout = drawEvent2x2(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight,schoolclass.getBoolean("is_online"));
+                }else{
+                    mainLayout = drawEvent1x4(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight,schoolclass.getBoolean("is_online"));
+                }
                 TableRow.LayoutParams layoutParamsEvent = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
                 layoutParamsEvent.weight = 1f;
                 mainLayout.setLayoutParams(layoutParamsEvent);
@@ -359,16 +418,14 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         return arr.join("/").replace("\"","");
     }
 
-    protected void drawEvent2x2(int dayIndex, String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb){
-        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
-        FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
+    protected LinearLayout drawEvent2x2(String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb,int parentOffset,boolean is_online){
+
+        Log.i("Timeslot", "drawEvent2x2");
         int[] startime = Arrays.stream(startTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int[] endtime = Arrays.stream(endTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int startheight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
         int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
         //the layout on which you are working
-//        FrameLayout day1Layout = (FrameLayout) findViewById(view);//The whole day
-
 
         //create new entry
         LinearLayout mainLayout = new LinearLayout(getContext());
@@ -376,37 +433,43 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         mainLayout.setBackgroundResource(R.drawable.coursebackground);
         ((GradientDrawable) mainLayout.getBackground()).setColor(Color.parseColor(color));
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
-        layoutParams.topMargin = startheight;
+        //set the vertical offset
+        //substract the offset the parent has to the top of the day
+        layoutParams.topMargin = startheight-parentOffset;
         mainLayout.setLayoutParams(layoutParams);
 
         LinearLayout ln1 = new LinearLayout(getContext());
         ln1.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT,1f));
         ln1.setOrientation(LinearLayout.VERTICAL);
-        ln1.addView(createTextView(classText));
-        ln1.addView(createTextView(branchName));
+
+//        ln1.addView(createTextView(classText));
+//        ln1.addView(createTextView(branchName));
+        ln1.addView(createTextView(classText, (int) Math.ceil(classText.split("/", -1).length/2f),false));
+        ln1.addView(createTextView(branchName, (int) Math.ceil(branchName.split("/", -1).length/2f),false));
 
         LinearLayout ln2 = new LinearLayout(getContext());
         ln2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT,1f));
         ln2.setOrientation(LinearLayout.VERTICAL);
-        ln2.addView(createTextView(teacherAbb));
-        ln2.addView(createTextView(roomAbb));
+
+//        ln2.addView(createTextView(teacherAbb));
+//        ln2.addView(createTextView(roomAbb));
+        ln2.addView(createTextView(teacherAbb, (int) Math.ceil(teacherAbb.split("/", -1).length/2f),false));
+        ln2.addView(createTextView(roomAbb, (int) Math.ceil(roomAbb.split("/", -1).length/2f),false));
 
         mainLayout.addView(ln1);
         mainLayout.addView(ln2);
         mainLayout.setPadding(10,10,10,10);
-        dayLayout.addView(mainLayout);
+        return mainLayout;
     }
 
     protected LinearLayout drawEvent1x4(String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb,int parentOffset,boolean is_online){
-//        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
-//        FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
+
         Log.i("Timeslot", "drawEvent1x4");
         int[] startime = Arrays.stream(startTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int[] endtime = Arrays.stream(endTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int startheight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
         int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
         //the layout on which you are working
-//        FrameLayout day1Layout = (FrameLayout) findViewById(view);//The whole day
 
         //create new entry
         LinearLayout mainLayout = new LinearLayout(getContext());

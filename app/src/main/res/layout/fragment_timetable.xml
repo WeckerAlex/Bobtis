@@ -72,49 +72,55 @@
                 android:layout_marginStart="40dp">
 
                 <TextView
+                    android:id="@+id/TLDay1header"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:background="@color/white"
                     android:layout_margin="1dp"
-                    android:maxLength="3"
-                    android:text="@string/Monday"/>
+                    android:maxLines="2"
+                    android:text= "@string/Monday"/>
                 <TextView
+                    android:id="@+id/TLDay2header"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:background="@color/white"
                     android:layout_margin="1dp"
-                    android:maxLength="3"
+                    android:maxLines="2"
                     android:text="@string/Tuesday"/>
                 <TextView
+                    android:id="@+id/TLDay3header"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:background="@color/white"
                     android:layout_margin="1dp"
-                    android:maxLength="3"
+                    android:autoSizeTextType="uniform"
+                    android:maxLines="2"
                     android:text="@string/Wednesday"/>
                 <TextView
+                    android:id="@+id/TLDay4header"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:background="@color/white"
                     android:layout_margin="1dp"
-                    android:maxLength="3"
+                    android:maxLines="2"
                     android:text="@string/Thursday"/>
                 <TextView
+                    android:id="@+id/TLDay5header"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:background="@color/white"
                     android:layout_margin="1dp"
-                    android:maxLength="3"
+                    android:maxLines="2"
                     android:text="@string/Friday"/>
 
             </LinearLayout>

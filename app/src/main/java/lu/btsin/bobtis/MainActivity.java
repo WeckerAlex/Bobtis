@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -91,10 +92,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     case R.id.nav_absence:{
-                        //LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                        //View layoutt = inflater.inflate(R.layout.fragment_popup,navigationView);
+//                        LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                        View layoutt = inflater.inflate(R.layout.fragment_popup,drawerLayout);
+                        new PopupFragment(drawerLayout).show(getSupportFragmentManager(),"");
 
-                        new PopupFragment().show(getSupportFragmentManager(),"");
                         break;
                     }
                     case R.id.nav_settings:{

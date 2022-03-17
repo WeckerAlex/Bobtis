@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
@@ -19,11 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TableRow;
@@ -92,7 +88,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
         if (adapter == null){
             //adapter = new MyAdapter(getContext());
-            adapter = new ListAdapter() {
+            adapter = new ListAdapter<String[]>() {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent) {
                     TextView tw = new TextView(getContext());
@@ -119,6 +115,11 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                     button.setText("Add to favorites");
                     ll.addView(button);
                     return ll;
+                }
+
+                @Override
+                public boolean filterEntry(String[] entry, CharSequence constraint) {
+                    return ((entry[1]).toUpperCase().contains(((String) constraint).toUpperCase()));
                 }
             };
         }
@@ -236,7 +237,6 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
     @Override
     public void processFinish(ServerResponse response) {
-        System.out.println(response.status);
         switch (response.endpoint) {
             case LOGIN:
                 //initial login response
@@ -265,7 +265,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
     private void prossessResponseArray(ServerResponse response){
         try {
-            String message;
+            //String message;
             switch (response.status){
                 case 200:{
                     JSONArray json = new JSONArray(response.response);
@@ -293,20 +293,19 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                             }
                             break;
                     }
-                    message = "Retrieved the "+response.endpoint;
+//                    message = "Retrieved the "+response.endpoint;
                     break;
                 }
                 case 400:
                 case 500:{
                     JSONObject json = new JSONObject(response.response);
-                    message = "Error: "+json.getString("error");
+                    Toast.makeText(getContext(), "Error: "+json.getString("error"), Toast.LENGTH_SHORT).show();
                     break;
                 }
                 default:{
-                    message = "Something went wrong";
+                    Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
                 }
             }
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         } catch (JSONException e) {
             e.printStackTrace();
         }
