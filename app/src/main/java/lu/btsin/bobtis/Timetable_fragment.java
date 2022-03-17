@@ -63,7 +63,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         TEACHER
     }
 
-    private LocalDate currentDate = LocalDate.now();
+    private static LocalDate currentDate = LocalDate.now();
     private static Calendar calendar;
     private int hourHeight = 150;
     private int startHour = 7;
@@ -76,7 +76,8 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private TextView tv4header;
     private TextView tv5header;
 
-    private boolean weekMode = true;
+    private static boolean weekMode = true;
+    private static JSONArray timetabledata = null;
 
     public Timetable_fragment() {
         // Required empty public constructor
@@ -124,18 +125,33 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     private void createButtonListener() {
-        ((ImageView) getView().findViewById(R.id.buttonNext)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        int[] ids = {R.id.TLDay1header,R.id.TLDay2header,R.id.TLDay3header,R.id.TLDay4header,R.id.TLDay5header};
+        ((ImageView) getView().findViewById(R.id.buttonNext)).setOnClickListener(view -> {
+            if (weekMode){
                 currentDate = currentDate.plusWeeks(1);
                 updateDate();
+            }else{
+                if (currentDate.getDayOfWeek() == DayOfWeek.FRIDAY){
+                    currentDate = currentDate.plusDays(3);
+                    updateDate();
+                }else{
+                    currentDate = currentDate.plusDays(1);
+                }
+                switchDisplayedDay(ids[currentDate.getDayOfWeek().getValue()-1]);
             }
         });
-        ((ImageView) getView().findViewById(R.id.buttonPrevious)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        ((ImageView) getView().findViewById(R.id.buttonPrevious)).setOnClickListener(view -> {
+            if (weekMode){
                 currentDate = currentDate.minusWeeks(1);
                 updateDate();
+            }else {
+                if (currentDate.getDayOfWeek() == DayOfWeek.MONDAY){
+                    currentDate = currentDate.minusDays(3);
+                    updateDate();
+                }else{
+                    currentDate = currentDate.minusDays(1);
+                }
+                switchDisplayedDay(ids[currentDate.getDayOfWeek().getValue()-1]);
             }
         });
         tv1header.setOnClickListener(view -> toggleDayWeek(view.getId()));
@@ -146,12 +162,52 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
     private void toggleDayWeek(int tvId){
         weekMode = !weekMode;
+        removeEvents();
+        Log.i("toggleDayWeek", String.valueOf(weekMode));
+        try {
+            //update ui to week mode
+            for (int day=0;day< timetabledata.length();day++){
+                //insert a single day
+                insertDayEvents(timetabledata.getJSONArray(day),day);
+            }
+            if (!weekMode){
+                //switched to day view
+                //set the date to the selected date
+                currentDate = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                switch (tvId){
+                    case R.id.TLDay2header:{
+                        currentDate = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.TUESDAY));
+                        break;
+                    }
+                    case R.id.TLDay3header:{
+                        currentDate = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY));
+                        break;
+                    }
+                    case R.id.TLDay4header:{
+                        currentDate = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY));
+                        break;
+                    }
+                    case R.id.TLDay5header:{
+                        currentDate = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
+                        break;
+                    }
+                }
+                Log.i("toggleDayWeek", String.valueOf(currentDate.getDayOfWeek()));
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
+            Log.e("toggleDayWeek",e.getLocalizedMessage());
+        }
+        switchDisplayedDay(tvId);
+    }
 
+    private void switchDisplayedDay(int tvId){
         FrameLayout DL1 = getView().findViewById(R.id.TLDay1);
         FrameLayout DL2 = getView().findViewById(R.id.TLDay2);
         FrameLayout DL3 = getView().findViewById(R.id.TLDay3);
         FrameLayout DL4 = getView().findViewById(R.id.TLDay4);
         FrameLayout DL5 = getView().findViewById(R.id.TLDay5);
+        //switch between week and day view
         tv1header.setVisibility((tvId == R.id.TLDay1header || weekMode) ? View.VISIBLE : View.GONE);
         DL1.setVisibility((tvId == R.id.TLDay1header || weekMode) ? View.VISIBLE : View.GONE);
         tv2header.setVisibility((tvId == R.id.TLDay2header || weekMode) ? View.VISIBLE : View.GONE);
@@ -390,9 +446,9 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
                 LinearLayout mainLayout;
                 if (weekMode){
-                    mainLayout = drawEvent2x2(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight,schoolclass.getBoolean("is_online"));
-                }else{
                     mainLayout = drawEvent1x4(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight,schoolclass.getBoolean("is_online"));
+                }else{
+                    mainLayout = drawEvent2x2(schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room,ownStartHeight-minstartheight,schoolclass.getBoolean("is_online"));
                 }
                 TableRow.LayoutParams layoutParamsEvent = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
                 layoutParamsEvent.weight = 1f;
@@ -612,12 +668,15 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
             Log.i("Login", String.valueOf(response.status));
             switch (response.status){
                 case 200:{
-                    JSONArray dayarray = new JSONArray(response.response);//get the array containing the single days
-                    for (int day=0;day< dayarray.length();day++){
+                    int[] ids = {R.id.TLDay1header,R.id.TLDay2header,R.id.TLDay3header,R.id.TLDay4header,R.id.TLDay5header};
+                    switchDisplayedDay(ids[currentDate.getDayOfWeek().getValue()-1]);
+                    timetabledata = new JSONArray(response.response);//get the array containing the single days
+                    for (int day=0;day< timetabledata.length();day++){
                         //insert a single day
                         Log.i("Day",String.valueOf(day));
-                        Log.i("Day",dayarray.getJSONArray(day).toString());
-                        insertDayEvents(dayarray.getJSONArray(day),day);
+                        Log.i("Day",timetabledata.getJSONArray(day).toString());
+
+                        insertDayEvents(timetabledata.getJSONArray(day),day);
                     }
                     break;
                 }
