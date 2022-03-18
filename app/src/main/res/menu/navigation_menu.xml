@@ -14,8 +14,12 @@
         android:title="My Homework"
         />
     <item
-        android:id="@+id/nav_absence"
+        android:id="@+id/nav_ownAbsences"
         android:title="My Absences"
+        />
+    <item
+        android:id="@+id/nav_Manager"
+        android:title="Manage class"
         />
 
     <item android:title="Class timetables"

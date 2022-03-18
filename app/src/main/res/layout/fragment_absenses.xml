@@ -7,20 +7,23 @@
 
     <TextView
         android:text="Absenses"
-        android:layout_width="300dp"
-        android:layout_height="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="center"
         android:textSize="20sp"/>
     <TextView
         android:id="@+id/txt_your_name"
-        android:layout_width="200dp"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text="@string/Class"/>
 
     <ListView
         android:id="@+id/studentList"
         android:layout_width="match_parent"
-        android:layout_height="1000dp"
+        android:layout_height="0dp"
+        android:dividerHeight="3dp"
+        android:paddingHorizontal="3dp"
+        android:paddingVertical="3dp"
         android:background="@color/timetable_background"
         android:layout_weight="1" />
 

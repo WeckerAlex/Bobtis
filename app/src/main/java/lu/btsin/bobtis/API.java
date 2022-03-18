@@ -29,55 +29,34 @@ class API extends AsyncTask {
     public AsyncResponse delegate = null;
     private static CookieManager cookieManager = null;
 
-//    public static void saveloginData(String username, String password, SharedPreferences prefs) {
-//        SharedPreferences.Editor edit = prefs.edit();
-//        edit.putString("username", username);
-//        edit.putString("password", password);
-//        edit.apply();
-//    }
-
-//    public static void saveloginDataAll(SharedPreferences prefs, String jsonString){
-//        Log.i("spclasse","classe");
-//        try {
-//            JSONObject json = new JSONObject(jsonString);
-//            SharedPreferences.Editor edit = prefs.edit();
-//            edit.putString("type", json.getString("type"));
-//            edit.putString("name", json.getString("name"));
-//            edit.putString("firstname", json.getString("firstname"));
-//            edit.putString("username", json.getString("username"));
-//            edit.putString("email", json.getString("email"));
-//            if (json.has("id_student")){
-//                edit.putString("id_student", json.getString("id_student"));
-//            }
-//            if (json.has("id_teacher")){
-//                edit.putString("id_teacher", json.getString("id_teacher"));
-//            }
-//            if (json.has("id_staff")){
-//                edit.putString("id_staff", json.getString("id_staff"));
-//            }
-//            edit.putString("classe", json.getString("classe"));
-//            JSONArray jsonclasse = json.getJSONArray("rights");
-//            ArrayList<String> rightsdata = new ArrayList<>();
-//            for (int i = 0; i < jsonclasse.length(); i++) {
-//                rightsdata.add(jsonclasse.getString(i));
-//            }
-//            edit.putString("rights", String.join(",",rightsdata));
-//            edit.apply();
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     public enum APIEndpoint {
         LOGIN,
         SCHOOLYEARS,
         CLASSES,
-        CLASS,
         ROOMS,
         TEACHERS,
+        AREASONS,
+        TIMEGRID,
+        INFO,
+        CLASS,
         TEACHER,
         ROOM,
-        STUDENTS
+        STUDENT,
+        STUDENTS,
+        ABSENCES,
+        HOMEWORKS,
+        ABSENCE_SPEED,
+        ABSENCE_UPDATE,
+        ABSENCE_SHORTEN,
+        ABSENCE_REMOVE,
+        HOMEWORK_ADD,
+        HOMEWORK_REMOVE,
+        HOMEWORK_UPDATE;
+
+        @Override
+        public String toString() {
+            return super.toString().replace("_",".").toLowerCase();
+        }
     }
 
     public API() {
@@ -100,7 +79,7 @@ class API extends AsyncTask {
      */
     private ServerResponse sendApiCall(APIEndpoint endpoint, String data) {
         try {
-            URL url = new URL("https://ssl.ltam.lu/bobtis/api/" + endpoint.toString().toLowerCase() + ".php");
+            URL url = new URL("https://ssl.ltam.lu/bobtis/api/" + endpoint.toString() + ".php");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
             con.setDoOutput(true);
@@ -133,6 +112,7 @@ class API extends AsyncTask {
                     data = "username=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "password=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
                     break;
                 }
+                case AREASONS:
                 case SCHOOLYEARS: {
                     data = "";
                     break;
@@ -155,7 +135,38 @@ class API extends AsyncTask {
                 case ROOM:
                     data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "week=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "room=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
                     break;
+                case STUDENT:
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "week=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "id_student=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
+                    break;
                 case STUDENTS:
+                case ABSENCES:
+                case HOMEWORKS:
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_lesson=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
+                    break;
+                case INFO:
+                    data = "id_teacher=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_student=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
+                    break;
+                case TIMEGRID:
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "class=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
+                    break;
+                case ABSENCE_SPEED:
+                    data = "id_lesson=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_student=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
+                    break;
+                case ABSENCE_UPDATE:
+                    data = "id_absence=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "acomment=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "fi_areason=" + URLEncoder.encode(objects[3].toString(), "UTF-8") + "&" + "endTime=" + URLEncoder.encode(objects[4].toString(), "UTF-8");
+                    break;
+                case ABSENCE_SHORTEN:
+                case ABSENCE_REMOVE:
+                    data = "id_absence=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
+                    break;
+                case HOMEWORK_ADD:
+                    Log.i("API",endpoint.toString());
+                    break;
+                case HOMEWORK_REMOVE:
+                    Log.i("API",endpoint.toString());
+                    break;
+                case HOMEWORK_UPDATE:
+                    Log.i("API",endpoint.toString());
                     break;
             }
         } catch (UnsupportedEncodingException e) {

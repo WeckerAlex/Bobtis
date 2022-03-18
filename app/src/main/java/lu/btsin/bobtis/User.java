@@ -55,7 +55,7 @@ public class User {
             username = json.getString("username");
             this.password = password;
             email = json.getString("email");
-            id = Integer.parseInt(json.getString("id_" + role.toString().toLowerCase()));
+            id = Integer.parseInt(json.getString("id_"+role.toString().toLowerCase()));
             if (role == Role.STUDENT){
                 classe = json.getString("classe");
             }
@@ -77,7 +77,8 @@ public class User {
         username = prefs.getString("username","");
         password = prefs.getString("password","");
         email = prefs.getString("email","");
-        id = prefs.getInt("id_" + role.toString().toLowerCase(),0);
+        Log.i("User", String.valueOf(prefs.getInt("id",0)));
+        id = prefs.getInt("id",0);
         if (role == Role.STUDENT){
             classe = prefs.getString("classe","");
         }
@@ -109,6 +110,7 @@ public class User {
         edit.putString("username", username);
         edit.putString("password", password);
         edit.putString("email", email);
+        Log.i("saveUser", String.valueOf(id));
         edit.putInt("id", id);
         if (role == Role.STUDENT){
             edit.putString("classe", classe);
@@ -136,6 +138,8 @@ public class User {
                 ", rights=" + rights +
                 '}';
     }
+
+
 
     public String getPassword() {
         return password;

@@ -3,16 +3,12 @@ package lu.btsin.bobtis;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -31,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private Fragment timetableFragment = new Timetable_fragment();
     private Fragment loginFragment = new Login_Fragment();
     private Fragment searchFragment = new Search_Fragment();
+    private Fragment absensesFragment = new Absenses_fragment();
     //private SharedPreferences prefs;
     public User currentUser;
 
@@ -79,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Log.i("navigation?","onNavigationItemSelected");
                 //TODO: check right to access
                 switch (item.getItemId()){
                     case R.id.personal_timetable: {
@@ -91,11 +89,17 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("onNavigationItemSelected","nav_homework");
                         break;
                     }
-                    case R.id.nav_absence:{
-//                        LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//                        View layoutt = inflater.inflate(R.layout.fragment_popup,drawerLayout);
-                        new PopupFragment(drawerLayout).show(getSupportFragmentManager(),"");
-
+                    case R.id.nav_Manager:{
+                        //if currentuser is null this menu item is hidden
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("id_teacher",currentUser.getId());
+                        absensesFragment.setArguments(bundle);
+                        switchFragment(absensesFragment);
+                        break;
+                    }
+                    case R.id.nav_ownAbsences:{
+                        //Todo create own absences fragment
+                        Log.i("onNavigationItemSelected","nav_ownAbsences");
                         break;
                     }
                     case R.id.nav_settings:{
@@ -146,15 +150,18 @@ public class MainActivity extends AppCompatActivity {
     // drawer when the icon is clicked
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        //app bar icon is pressed
+        Log.i("navigation?","onOptionsItemSelected");
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }else {
+            //search buttonis pressed.
             FragmentContainerView fcv = findViewById(R.id.fragment_container_view);
-            if (fcv.getFragment() instanceof Timetable_fragment){
-                switchFragment(searchFragment);
-            }
             if (fcv.getFragment() instanceof Search_Fragment){
+                //in case of search been displayed, go to timetable
                 switchFragment(timetableFragment);
+            }else{
+                switchFragment(searchFragment);
             }
         }
         return super.onOptionsItemSelected(item);

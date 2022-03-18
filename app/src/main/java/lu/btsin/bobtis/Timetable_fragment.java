@@ -60,7 +60,8 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     public enum Actions {
         CLASS,
         ROOM,
-        TEACHER
+        TEACHER,
+        STUDENT
     }
 
     private static LocalDate currentDate = LocalDate.now();
@@ -240,18 +241,41 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 case TEACHER:
                     getTeacher(getSchoolyear(),getWeekNumber(),requestedData);
                     break;
+                case STUDENT:
+                    getStudent(getSchoolyear(),getWeekNumber(),requestedData);
+                    break;
             }
         }else{
             //no action is defined
             User user = ((MainActivity)getActivity()).currentUser;
-            if (user != null && user.getClasse() != null){
-                //if user and classe are defined request the users class (default action)
-                Log.i("showtimetable",user.getClasse());
-                currentaction = Actions.CLASS;
-                requestedData = user.getClasse();
-                //repeat the request
-                updateDate();
+            if (user != null){
+                switch (user.getRole()){
+                    case STUDENT:
+                        currentaction = Actions.STUDENT;
+                        requestedData = String.valueOf(user.getId());
+                        //repeat the request
+                        updateDate();
+                        break;
+                    case TEACHER:
+                        currentaction = Actions.TEACHER;
+                        requestedData = user.getName();
+                        //repeat the request
+                        updateDate();
+                        break;
+                    case STAFF:
+                        break;
+                    case SEPAS:
+                        break;
+                }
             }
+//            if (user != null && user.getClasse() != null){
+//                //if user and classe are defined request the users class (default action)
+//                Log.i("showtimetable",user.getClasse());
+//                currentaction = Actions.STUDENT;
+//                requestedData = String.valueOf(user.getId());
+//                //repeat the request
+//                updateDate();
+//            }
         }
         LocalDate tempdate = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         tv1header.setText(tempdate.getDayOfMonth()+".\n"+ getResources().getString(R.string.Monday));
@@ -308,18 +332,30 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         task.execute("teacher",schoolyear,week,teacher);
     }
 
+    protected void getStudent(String schoolyear, int week, String id){
+        API task =  new API();
+        task.delegate = this;
+        task.execute("student",schoolyear,week,id);
+    }
+
     @Override
     public void processFinish(ServerResponse response) {
         switch (response.endpoint){
-            case LOGIN:
+            case LOGIN:{
                 //auto login
                 prossessLogin(response);
                 break;
+            }
             case TEACHER:
             case ROOM:
-            case CLASS:
+            case CLASS:{
                 prossessTimetable(response);
                 break;
+            }
+            case STUDENT:{
+                Log.i("User",((MainActivity)getActivity()).currentUser.toString());
+                prossessTimetable(response);
+            }
         }
     }
 
