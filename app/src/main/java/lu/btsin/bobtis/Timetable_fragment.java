@@ -92,25 +92,31 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
      */
     public static Timetable_fragment newInstance(String param1, String param2) {
         Timetable_fragment fragment = new Timetable_fragment();
+        Log.i("currentdate", currentDate.getDayOfWeek().toString()+" newInstance");
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            currentDate = currentDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        }
+        Log.i("currentdate", currentDate.getDayOfWeek().toString()+" onCreate");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Log.i("setData","action" + " " + "data");
+        Log.i("currentdate", currentDate.getDayOfWeek().toString()+" onCreateView");
         return inflater.inflate(R.layout.fragment_timetable, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.i("currentdate", currentDate.getDayOfWeek().toString()+" onViewCreated");
         tv1header = getView().findViewById(R.id.TLDay1header);
         tv2header = getView().findViewById(R.id.TLDay2header);
         tv3header = getView().findViewById(R.id.TLDay3header);
@@ -340,6 +346,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     @Override
     public void processFinish(ServerResponse response) {
+        Log.i("currentdate", currentDate.getDayOfWeek().toString() + " processFinish");
         switch (response.endpoint){
             case LOGIN:{
                 //auto login
