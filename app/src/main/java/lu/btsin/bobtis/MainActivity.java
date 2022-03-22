@@ -38,13 +38,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //prefs = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
         currentUser = User.loadUser(getSharedPreferences("UserPreferences", Context.MODE_PRIVATE));
+        Log.i("creating timetableFragment","onCreate");
         if (currentUser == null){
             switchFragment(loginFragment);
+            ((Timetable_fragment)timetableFragment).setMarkAbsences(false);
         }else{
             Log.i("User_loaded",currentUser.toString());
             //logging in at startup
             //Todo create ar
             API.autologin(currentUser,null);
+//            switch (currentUser.getRole()){
+//                case TEACHER:{
+//                    ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.TEACHER,currentUser.getUsername().substring(0,5).toUpperCase());
+//                    break;
+//                }
+//                case STUDENT:{
+//                    ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.STUDENT, String.valueOf(currentUser.getId()));
+//                    break;
+//                }
+//            }
+            //enable the Absences fragment
+            ((Timetable_fragment)timetableFragment).setMarkAbsences(currentUser.has_Permission(User.Right.MARK_TEACHES));
         }
         initNavbar();
         setNavbarHeader();
@@ -80,9 +94,18 @@ public class MainActivity extends AppCompatActivity {
                 //TODO: check right to access
                 switch (item.getItemId()){
                     case R.id.personal_timetable: {
-                        if (currentUser.getClasse()!=null){
-                            displayClass(currentUser.getClasse());
-                        }
+                        switch (currentUser.getRole()){
+                            case TEACHER:{
+                                displayTeacher(currentUser.getUsername().substring(0,5).toUpperCase());
+                                break;
+                            }
+                            case STUDENT:{
+                                if (currentUser.getClasse()!=null){
+                                    displayClass(currentUser.getClasse());
+                                }
+                            }
+                        };
+
                         break;
                     }
                     case R.id.nav_homework:{
@@ -169,7 +192,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void displayTeacher(String teacher){
         Log.i("displayTeacher",teacher);
+        boolean is_allowed_to_mark_absences = (currentUser.has_Permission(User.Right.MARK_TEACHES) && currentUser.getUsername().substring(0,5).equalsIgnoreCase(teacher.toUpperCase()));
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.TEACHER, teacher);
+        ((Timetable_fragment)timetableFragment).setMarkAbsences(is_allowed_to_mark_absences);
+        Log.i("clicklistener_displayTeacher", String.valueOf(is_allowed_to_mark_absences));
         switchFragment(timetableFragment);
     }
 
@@ -184,4 +210,18 @@ public class MainActivity extends AppCompatActivity {
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.CLASS,classe);
         switchFragment(timetableFragment);
     }
+
+    public void displayStudent(int studentid){
+        Log.i("Segue","Student: "+studentid);
+        ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.STUDENT, String.valueOf(studentid));
+        switchFragment(timetableFragment);
+    }
+
+    public void displayAbsences(int lessonId,String schoolyear){
+        Log.i("Segue","Absences: "+lessonId);
+        Absenses_fragment abs = Absenses_fragment.newInstance(lessonId,schoolyear);
+//        ((Timetable_fragment)absensesFragment).setData(Timetable_fragment.Actions.CLASS, String.valueOf(studentid));
+        switchFragment(abs);
+    }
+
 }

@@ -127,8 +127,15 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
                     User user = new User(getActivity().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response,etpassword.getText().toString());
                     ((MainActivity)getActivity()).currentUser = user;
                     ((MainActivity)getActivity()).setNavbarHeader();
-                    if (user.getRole() == User.Role.STUDENT){
-                        ((MainActivity)getActivity()).displayClass(json.getString("classe"));
+                    switch (user.getRole()){
+                        case STUDENT:{
+                            ((MainActivity)getActivity()).displayStudent(user.getId());
+                            break;
+                        }
+                        case TEACHER:{
+                            ((MainActivity)getActivity()).displayTeacher(user.getUsername().substring(0,5).toUpperCase());
+                            break;
+                        }
                     }
                     break;
                 }

@@ -15,10 +15,15 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -30,30 +35,32 @@ import java.util.ArrayList;
 public class Absenses_fragment extends Fragment implements AsyncResponse {
 
     // TODO: Rename and change types of parameters
-    private int id_teacher;
+    private int id_lesson;
+    private String schoolyear;
 
-    private View view;
-    private ArrayList<String> data = new ArrayList<>();
+    private int lessonId;
+    private ArrayList<Student> data = new ArrayList<>();
     private static ListAdapter adapter;
 
     public Absenses_fragment() {
         // Required empty public constructor
-        for (int i = 0; i < 50; i++) {
-            data.add(String.valueOf(i));
-        }
     }
 
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param lessonId Parameter 1.
+     * @param schoolyear
      * @return A new instance of fragment PopupFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static Absenses_fragment newInstance(String param1, String param2) {
+    public static Absenses_fragment newInstance(int lessonId, String schoolyear) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("id_lesson",lessonId);
+        bundle.putString("schoolyear",schoolyear);
         Absenses_fragment fragment = new Absenses_fragment();
+        fragment.setArguments(bundle);
         return fragment;
     }
 
@@ -61,7 +68,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 //        getDialog().setTitle(getString(R.string.app_name));
         //id_teacher = getArguments().getInt("id_teacher");
-        Log.i("passdatatest", String.valueOf(id_teacher));
+        Log.i("passdatatest", String.valueOf(id_lesson));
         View view = inflater.inflate(R.layout.fragment_absenses,container,false);
         return view;
     }
@@ -70,35 +77,40 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            id_teacher = getArguments().getInt("id_teacher");
+            id_lesson = getArguments().getInt("id_lesson");
+            schoolyear = getArguments().getString("schoolyear");
+            getStudents(schoolyear, id_lesson);
         }
-        Log.i("passdatatest", String.valueOf(id_teacher));
+        Log.i("passdatatest", String.valueOf(id_lesson));
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.i("passdatatest", String.valueOf(id_teacher));
+        Log.i("passdatatest", String.valueOf(id_lesson));
         init();
     }
 
     public void init(){
-        Log.i("passdatatest", String.valueOf(id_teacher));
-        Log.i("initinit","initinit");
+        Log.i("passdatatest", String.valueOf(id_lesson));
         ListView list = getView().findViewById(R.id.studentList);
         if (adapter == null){
             adapter = new ListAdapter<String>() {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent) {
-                    Log.i("initinit","Drawing " + position);
-                    TextView tw = new TextView(getContext());
+                    Log.i("getView", data.size()+":"+position);
+                    Student student = data.get(position);
+                    Log.i("getView",data.size() +", "+student.getName()+ " " +student.getFirstname());
+                    Toast.makeText(parent.getContext(),student.getFirstname()+" : "+student.getName(),Toast.LENGTH_LONG);
+                    Log.i("initinit","Drawing " + student);
+                    TextView tw = new TextView(getActivity().getApplicationContext());
                     LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
                     layoutParamsText.setMargins(1,1,1,1);
                     layoutParamsText.weight = 1;
 
                     tw.setPadding(1,0,1,0);
                     tw.setLayoutParams(layoutParamsText);
-                    tw.setText(data.get(position));
+                    tw.setText(student.getFirstname()+" "+student.getName());
 
                     LinearLayout ll = new LinearLayout(getContext());
                     ll.setOnClickListener(view -> Log.i("initinit","Pressed "+position));
@@ -118,6 +130,9 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
 
                     Button buttonAbsence = new Button(getContext());
                     buttonAbsence.setText("Absence");
+                    if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_STUDENTS)){
+                        ll.setOnClickListener(view -> ((MainActivity)getActivity()).displayStudent(student.getId()));
+                    }
                     ll.addView(buttonAbsence);
                     return ll;
                 }
@@ -144,6 +159,26 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                 break;
             case STUDENTS:
                 Log.i("Absenses_fragment","STUDENTS");
+                switch (response.status){
+                    case 200:{
+                        try {
+                            data = new ArrayList<>();
+                            JSONArray json = new JSONArray(response.response);
+                            for (int i = 0; i < json.length(); i++) {
+                                Student student = Student.getStudent(json.getJSONObject(i));
+                                Log.i("enumerstudent", student.getFirstname());
+                                data.add(student);
+                            }
+                            adapter.setData(data);
+                            adapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    default:{
+                        Toast.makeText(getContext(),response.response,Toast.LENGTH_LONG).show();
+                    }
+                }
                 break;
             case ABSENCE_SPEED:
                 Log.i("Absenses_fragment","ABSENCE_SPEED");
@@ -172,7 +207,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
         task.execute(TEACHER,schoolyear,week,id);
     }
 
-    protected void getStudents(String schoolyear, String idLesson){
+    protected void getStudents(String schoolyear, int idLesson){
         API task =  new API();
         task.delegate = this;
         task.execute(STUDENTS,schoolyear,idLesson);

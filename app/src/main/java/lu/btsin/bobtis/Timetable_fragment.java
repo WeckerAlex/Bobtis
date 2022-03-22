@@ -56,7 +56,6 @@ import java.util.regex.Pattern;
  * create an instance of this fragment.
  */
 public class Timetable_fragment extends Fragment implements AsyncResponse {
-
     public enum Actions {
         CLASS,
         ROOM,
@@ -69,6 +68,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private int hourHeight = 150;
     private int startHour = 7;
     private int endHour = 17;
+    private boolean is_allowed_to_mark_absences = false;
     private Actions currentaction;
     private String requestedData;
     private TextView tv1header;
@@ -90,7 +90,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
      *
      * @return A new instance of fragment Timetable_fragment.
      */
-    public static Timetable_fragment newInstance(String param1, String param2) {
+    public static Timetable_fragment newInstance(boolean is_allowed_to_mark_absences) {
         Timetable_fragment fragment = new Timetable_fragment();
         Log.i("currentdate", currentDate.getDayOfWeek().toString()+" newInstance");
         return fragment;
@@ -98,6 +98,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i("creating timetableFragment","onCreate Timetable_fragment");
         super.onCreate(savedInstanceState);
         if (currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
             currentDate = currentDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
@@ -106,16 +107,17 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         Log.i("currentdate", currentDate.getDayOfWeek().toString()+" onCreateView");
+        Log.i("currentdate", String.valueOf(savedInstanceState == null));
         return inflater.inflate(R.layout.fragment_timetable, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.i("currentdate", String.valueOf(savedInstanceState == null));
         Log.i("currentdate", currentDate.getDayOfWeek().toString()+" onViewCreated");
         tv1header = getView().findViewById(R.id.TLDay1header);
         tv2header = getView().findViewById(R.id.TLDay2header);
@@ -257,16 +259,18 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
             if (user != null){
                 switch (user.getRole()){
                     case STUDENT:
-                        currentaction = Actions.STUDENT;
-                        requestedData = String.valueOf(user.getId());
-                        //repeat the request
-                        updateDate();
+//                        currentaction = Actions.STUDENT;
+//                        requestedData = String.valueOf(user.getId());
+//                        //repeat the request
+//                        updateDate();
+                        ((MainActivity)getActivity()).displayStudent(user.getId());
                         break;
                     case TEACHER:
-                        currentaction = Actions.TEACHER;
-                        requestedData = user.getName();
-                        //repeat the request
-                        updateDate();
+//                        currentaction = Actions.TEACHER;
+//                        requestedData = user.getUsername().substring(0,5);
+//                        //repeat the request
+//                        updateDate();
+                        ((MainActivity)getActivity()).displayTeacher(user.getUsername().substring(0,5).toUpperCase());
                         break;
                     case STAFF:
                         break;
@@ -496,6 +500,19 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 TableRow.LayoutParams layoutParamsEvent = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
                 layoutParamsEvent.weight = 1f;
                 mainLayout.setLayoutParams(layoutParamsEvent);
+                Log.i("clicklistener", String.valueOf(is_allowed_to_mark_absences));
+                User user = ((MainActivity)getActivity()).currentUser;
+                if (is_allowed_to_mark_absences || user.has_Permission(User.Right.SCHEDULE_STUDENTS) ){
+                    //user has the permission to insert absences or is permitted to see all the timetables
+                    mainLayout.setOnClickListener(view -> {
+                        try {
+                            ((MainActivity)getActivity()).displayAbsences(schoolclass.getInt("id_lesson"),getSchoolyear());
+                            Log.i("enumerstudent", String.valueOf(schoolclass.getInt("id_lesson")));
+                        } catch (JSONException e) {
+                            Log.e("Event_setListener",schoolclass.toString());
+                        }
+                    });
+                }
                 timeslotLayout.addView(mainLayout);
             }
 
@@ -746,6 +763,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     public void setData(Actions action,String data){
         currentaction = action;
         requestedData = data;
+        is_allowed_to_mark_absences = false;
         try {
             //try to remove all the events from the timetable
             removeEvents();
@@ -766,4 +784,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 break;
         }
     }
+
+    public void setMarkAbsences(boolean is_allowed_to_mark_absences) {
+        Log.i("setMarkAbsences", String.valueOf(is_allowed_to_mark_absences));
+        this.is_allowed_to_mark_absences = is_allowed_to_mark_absences;
+    }
+
 }
