@@ -14,6 +14,7 @@ public class Student {
     private String email;
     private String iam;
     private boolean present;
+    private int absenceId = 0;
 
     public Student(int id, String name, String firstname, String email, String iam, boolean present) {
         this.id = id;
@@ -63,6 +64,14 @@ public class Student {
 
     public boolean isPresent() {
         return present;
+    }
+
+    public int getAbsenceId() {
+        return absenceId;
+    }
+
+    public void setAbsenceId(int absenceId) {
+        this.absenceId = absenceId;
     }
 
     @Override

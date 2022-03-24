@@ -9,4 +9,7 @@
     <string name="Class">Klasse</string>
     <string name="Room">Raum</string>
     <string name="Apply">Anwenden</string>
+    <string name="Branch">Fach</string>
+    <string name="Period">Zeitraum</string>
+    <string name="Day">Tag</string>
 </resources>

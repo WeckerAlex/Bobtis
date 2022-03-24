@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -57,11 +58,9 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
             Button buttonpositive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
             Button buttonneutral = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEUTRAL);
             Button buttonnegative = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
-
             buttonpositive.setOnClickListener(view -> saveUpdate(absenceId,commentET.getText().toString(),reasons[sp.getSelectedItemPosition()].id_reason,npHour.getValue(),npMinute.getValue()));
             buttonneutral.setOnClickListener(view -> dismiss());
             buttonnegative.setOnClickListener(view -> deleteAbsence(absenceId));
-
         });
         return dialog;
     }

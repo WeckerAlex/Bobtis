@@ -506,7 +506,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     //user has the permission to insert absences or is permitted to see all the timetables
                     mainLayout.setOnClickListener(view -> {
                         try {
-                            ((MainActivity)getActivity()).displayAbsences(schoolclass.getInt("id_lesson"),getSchoolyear());
+                            ((MainActivity)getActivity()).displayAbsences(schoolclass.getInt("id_lesson"),getSchoolyear(),is_allowed_to_mark_absences,classe,subject,schoolclass.getString("begin"),schoolclass.getString("end"),schoolclass.getString("date"));
                             Log.i("enumerstudent", String.valueOf(schoolclass.getInt("id_lesson")));
                         } catch (JSONException e) {
                             Log.e("Event_setListener",schoolclass.toString());

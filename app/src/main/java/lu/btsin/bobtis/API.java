@@ -104,7 +104,7 @@ class API extends AsyncTask {
 
     @Override
     protected Object doInBackground(Object[] objects) {
-        APIEndpoint endpoint = APIEndpoint.valueOf(objects[0].toString().trim().toUpperCase());
+        APIEndpoint endpoint = APIEndpoint.valueOf(objects[0].toString().replace(".","_").toUpperCase());
         String data = "";
         try {
             switch (endpoint) {

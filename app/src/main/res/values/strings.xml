@@ -25,4 +25,7 @@
     <string name="Class">Class</string>
     <string name="Room">Room</string>
     <string name="Apply">Apply</string>
+    <string name="Branch">Branch</string>
+    <string name="Period">Period</string>
+    <string name="Day" >Day</string>
 </resources>

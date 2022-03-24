@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -111,11 +112,12 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 case R.id.nav_Manager:{
+                    //Todo show the teachers current lesson absences fragment
                     //if currentuser is null this menu item is hidden
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("id_teacher",currentUser.getId());
-                    absensesFragment.setArguments(bundle);
-                    switchFragment(absensesFragment);
+//                    Bundle bundle = new Bundle();
+//                    bundle.putInt("id_teacher",currentUser.getId());
+//                    absensesFragment.setArguments(bundle);
+//                    switchFragment(absensesFragment);
                     break;
                 }
                 case R.id.nav_ownAbsences:{
@@ -214,11 +216,9 @@ public class MainActivity extends AppCompatActivity {
         switchFragment(timetableFragment);
     }
 
-    public void displayAbsences(int lessonId,String schoolyear){
+    public void displayAbsences(int lessonId,String schoolyear,boolean allow_Adding_Absences,String className,String branchName,String startTime,String endTime,String date){
         Log.i("Segue","Absences: "+lessonId);
-//        Absenses_fragment abs = Absenses_fragment.newInstance(lessonId,schoolyear);
-//        ((Timetable_fragment)absensesFragment).setData(Timetable_fragment.Actions.CLASS, String.valueOf(studentid));
-        ((Absenses_fragment)absensesFragment).setData(schoolyear,lessonId);
+        ((Absenses_fragment)absensesFragment).setData(schoolyear,lessonId,allow_Adding_Absences,className,branchName,startTime,endTime,date);
         switchFragment(absensesFragment);
     }
 
