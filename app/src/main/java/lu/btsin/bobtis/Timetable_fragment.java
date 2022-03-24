@@ -712,7 +712,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     message = "Something went wrong";
                 }
             }
-//            Toast.makeText(getContext(), response.status+" "+message, Toast.LENGTH_LONG).show();
+//            Toast.makeText(getActivity(), response.status+" "+message, Toast.LENGTH_LONG).show();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -748,11 +748,11 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 }
                 case 404:
                 case 500:{
-                    Toast.makeText(getContext(),"Error: "+new JSONObject(response.response).getString("error"), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"Error: "+new JSONObject(response.response).getString("error"), Toast.LENGTH_LONG).show();
                     break;
                 }
                 default:{
-                    Toast.makeText(getContext(),"Not connected to the internet", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"Not connected to the internet", Toast.LENGTH_LONG).show();
                 }
             }
         } catch (JSONException e) {
@@ -781,6 +781,9 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 break;
             case TEACHER:
                 getTeacher(getSchoolyear(),getWeekNumber(),data);
+                break;
+            case STUDENT:
+                getStudent(getSchoolyear(),getWeekNumber(),data);
                 break;
         }
     }

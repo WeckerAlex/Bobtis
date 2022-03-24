@@ -87,60 +87,57 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         navigationView = (NavigationView) findViewById(R.id.navView);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Log.i("navigation?","onNavigationItemSelected");
-                //TODO: check right to access
-                switch (item.getItemId()){
-                    case R.id.personal_timetable: {
-                        switch (currentUser.getRole()){
-                            case TEACHER:{
-                                displayTeacher(currentUser.getUsername().substring(0,5).toUpperCase());
-                                break;
+        navigationView.setNavigationItemSelectedListener(item -> {
+            Log.i("navigation?","onNavigationItemSelected");
+            //TODO: check right to access
+            switch (item.getItemId()){
+                case R.id.personal_timetable: {
+                    switch (currentUser.getRole()){
+                        case TEACHER:{
+                            displayTeacher(currentUser.getUsername().substring(0,5).toUpperCase());
+                            break;
+                        }
+                        case STUDENT:{
+                            if (currentUser.getClasse()!=null){
+                                displayClass(currentUser.getClasse());
                             }
-                            case STUDENT:{
-                                if (currentUser.getClasse()!=null){
-                                    displayClass(currentUser.getClasse());
-                                }
-                            }
-                        };
+                        }
+                    };
 
-                        break;
-                    }
-                    case R.id.nav_homework:{
-                        Log.i("onNavigationItemSelected","nav_homework");
-                        break;
-                    }
-                    case R.id.nav_Manager:{
-                        //if currentuser is null this menu item is hidden
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("id_teacher",currentUser.getId());
-                        absensesFragment.setArguments(bundle);
-                        switchFragment(absensesFragment);
-                        break;
-                    }
-                    case R.id.nav_ownAbsences:{
-                        //Todo create own absences fragment
-                        Log.i("onNavigationItemSelected","nav_ownAbsences");
-                        break;
-                    }
-                    case R.id.nav_settings:{
-                        Log.i("Settings","drg");
-                        break;
-                    }
-                    case R.id.nav_login:{
-                        switchFragment(loginFragment);
-                        break;
-                    }
-                    default:{
-                        break;
-                    }
+                    break;
                 }
-                DrawerLayout dl = findViewById(R.id.my_drawer_layout);
-                dl.closeDrawer(GravityCompat.START);
-                return false;
+                case R.id.nav_homework:{
+                    Log.i("onNavigationItemSelected","nav_homework");
+                    break;
+                }
+                case R.id.nav_Manager:{
+                    //if currentuser is null this menu item is hidden
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("id_teacher",currentUser.getId());
+                    absensesFragment.setArguments(bundle);
+                    switchFragment(absensesFragment);
+                    break;
+                }
+                case R.id.nav_ownAbsences:{
+                    //Todo create own absences fragment
+                    Log.i("onNavigationItemSelected","nav_ownAbsences");
+                    break;
+                }
+                case R.id.nav_settings:{
+                    Log.i("Settings","drg");
+                    break;
+                }
+                case R.id.nav_login:{
+                    switchFragment(loginFragment);
+                    break;
+                }
+                default:{
+                    break;
+                }
             }
+            DrawerLayout dl = findViewById(R.id.my_drawer_layout);
+            dl.closeDrawer(GravityCompat.START);
+            return false;
         });
     }
 
@@ -219,9 +216,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void displayAbsences(int lessonId,String schoolyear){
         Log.i("Segue","Absences: "+lessonId);
-        Absenses_fragment abs = Absenses_fragment.newInstance(lessonId,schoolyear);
+//        Absenses_fragment abs = Absenses_fragment.newInstance(lessonId,schoolyear);
 //        ((Timetable_fragment)absensesFragment).setData(Timetable_fragment.Actions.CLASS, String.valueOf(studentid));
-        switchFragment(abs);
+        ((Absenses_fragment)absensesFragment).setData(schoolyear,lessonId);
+        switchFragment(absensesFragment);
     }
 
 }

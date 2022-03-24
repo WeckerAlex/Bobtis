@@ -2,6 +2,7 @@ package lu.btsin.bobtis;
 
 import static lu.btsin.bobtis.API.APIEndpoint.*;
 
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -11,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TableRow;
@@ -34,12 +37,8 @@ import java.util.ArrayList;
  */
 public class Absenses_fragment extends Fragment implements AsyncResponse {
 
-    // TODO: Rename and change types of parameters
-    private int id_lesson;
-    private String schoolyear;
-
-    private int lessonId;
-    private ArrayList<Student> data = new ArrayList<>();
+    public static final int BLACK = Color.BLACK;
+    private ArrayList<Student> data;
     private static ListAdapter adapter;
 
     public Absenses_fragment() {
@@ -66,9 +65,6 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        getDialog().setTitle(getString(R.string.app_name));
-        //id_teacher = getArguments().getInt("id_teacher");
-        Log.i("passdatatest", String.valueOf(id_lesson));
         View view = inflater.inflate(R.layout.fragment_absenses,container,false);
         return view;
     }
@@ -76,34 +72,27 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            id_lesson = getArguments().getInt("id_lesson");
-            schoolyear = getArguments().getString("schoolyear");
-            getStudents(schoolyear, id_lesson);
-        }
-        Log.i("passdatatest", String.valueOf(id_lesson));
+        Log.i("enumerstudent", "onCreate");
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.i("passdatatest", String.valueOf(id_lesson));
         init();
     }
 
     public void init(){
-        Log.i("passdatatest", String.valueOf(id_lesson));
         ListView list = getView().findViewById(R.id.studentList);
+        Log.i("enumerstudent_init_view", "list is null: " +(list==null));
+        Log.i("enumerstudent_init_view", "context is null: " +(getContext()==null));
         if (adapter == null){
+            data = new ArrayList<>();
             adapter = new ListAdapter<String>() {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent) {
-                    Log.i("getView", data.size()+":"+position);
                     Student student = data.get(position);
                     Log.i("getView",data.size() +", "+student.getName()+ " " +student.getFirstname());
-                    Toast.makeText(parent.getContext(),student.getFirstname()+" : "+student.getName(),Toast.LENGTH_LONG);
-                    Log.i("initinit","Drawing " + student);
-                    TextView tw = new TextView(getActivity().getApplicationContext());
+                    TextView tw = new TextView(parent.getContext());
                     LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
                     layoutParamsText.setMargins(1,1,1,1);
                     layoutParamsText.weight = 1;
@@ -112,7 +101,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                     tw.setLayoutParams(layoutParamsText);
                     tw.setText(student.getFirstname()+" "+student.getName());
 
-                    LinearLayout ll = new LinearLayout(getContext());
+                    LinearLayout ll = new LinearLayout(parent.getContext());
                     ll.setOnClickListener(view -> Log.i("initinit","Pressed "+position));
                     ll.setGravity(Gravity.CLIP_HORIZONTAL);
                     ll.setBackgroundResource(R.drawable.coursebackground);
@@ -124,28 +113,41 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
 
                     ll.setOrientation(LinearLayout.HORIZONTAL);
                     ll.addView(tw);
-                    Button buttonVtt = new Button(getContext());
+
+                    Button buttonVtt = new Button(parent.getContext());
+                    LinearLayout.LayoutParams layoutParamsShorten = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+                    layoutParamsShorten.setMargins(0,3,0,3);
+                    buttonVtt.setLayoutParams(layoutParamsShorten);
+                    buttonVtt.setVisibility(View.INVISIBLE);
                     buttonVtt.setText("VTT");
                     ll.addView(buttonVtt);
 
-                    Button buttonAbsence = new Button(getContext());
-                    buttonAbsence.setText("Absence");
+                    ImageButton buttonAbsence = new ImageButton(parent.getContext());
+                    buttonAbsence.setImageTintList(ColorStateList.valueOf(Color.BLACK));
+                    LinearLayout.LayoutParams layoutParamsInsert = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT);
+                    layoutParamsInsert.setMargins(0,3,0,3);
+                    buttonAbsence.setLayoutParams(layoutParamsInsert);
+                    buttonAbsence.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_post_add_24));
+                    ll.addView(buttonAbsence);
+
                     if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_STUDENTS)){
                         ll.setOnClickListener(view -> ((MainActivity)getActivity()).displayStudent(student.getId()));
                     }
-                    ll.addView(buttonAbsence);
                     return ll;
                 }
 
                 @Override
                 public boolean filterEntry(String entry, CharSequence constraint) {
-                    Log.i("filterEntry",entry+" - "+constraint);
                     return ((entry).toUpperCase().contains(((String) constraint).toUpperCase()));
                 }
             };
         }
-        list.setAdapter(adapter);
         adapter.setData(data);
+        list.setAdapter(adapter);
+    }
+
+    public void setData(String schoolyear,int id_lesson) {
+        getStudents(schoolyear, id_lesson);
     }
 
     @Override
@@ -162,21 +164,22 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                 switch (response.status){
                     case 200:{
                         try {
-                            data = new ArrayList<>();
+                            data.clear();
                             JSONArray json = new JSONArray(response.response);
                             for (int i = 0; i < json.length(); i++) {
                                 Student student = Student.getStudent(json.getJSONObject(i));
                                 Log.i("enumerstudent", student.getFirstname());
                                 data.add(student);
                             }
-                            adapter.setData(data);
                             adapter.notifyDataSetChanged();
                         } catch (JSONException e) {
+                            Log.i("enumerstudent", data.toString());
                             e.printStackTrace();
                         }
+                        break;
                     }
                     default:{
-                        Toast.makeText(getContext(),response.response,Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(),response.response,Toast.LENGTH_LONG).show();
                     }
                 }
                 break;
@@ -236,5 +239,4 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
         task.delegate = this;
         task.execute(ABSENCE_REMOVE,id_absence);
     }
-
 }
