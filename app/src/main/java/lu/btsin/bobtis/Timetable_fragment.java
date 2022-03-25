@@ -241,16 +241,16 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
             //The action is defined
             switch (currentaction){
                 case CLASS:
-                    getClass(getSchoolyear(),getWeekNumber(),requestedData);
+                    API.getClass(getSchoolyear(),getWeekNumber(),requestedData,this);
                     break;
                 case ROOM:
-                    getRoom(getSchoolyear(),getWeekNumber(),requestedData);
+                    API.getRoom(getSchoolyear(),getWeekNumber(),requestedData,this);
                     break;
                 case TEACHER:
-                    getTeacher(getSchoolyear(),getWeekNumber(),requestedData);
+                    API.getTeacher(getSchoolyear(),getWeekNumber(),requestedData,this);
                     break;
                 case STUDENT:
-                    getStudent(getSchoolyear(),getWeekNumber(),requestedData);
+                    API.getStudent(getSchoolyear(),getWeekNumber(),requestedData,this);
                     break;
             }
         }else{
@@ -324,39 +324,34 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         return start+"-"+end;
     }
 
-    protected void getClass(String schoolyear, int week, String requestedclass){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("class",schoolyear,week,requestedclass);
-    }
-
-    protected void getRoom(String schoolyear, int week, String room){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("room",schoolyear,week,room);
-    }
-
-    protected void getTeacher(String schoolyear, int week, String teacher){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("teacher",schoolyear,week,teacher);
-    }
-
-    protected void getStudent(String schoolyear, int week, String id){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("student",schoolyear,week,id);
-    }
+//    protected void getClass(String schoolyear, int week, String requestedclass){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("class",schoolyear,week,requestedclass);
+//    }
+//
+//    protected void getRoom(String schoolyear, int week, String room){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("room",schoolyear,week,room);
+//    }
+//
+//    protected void getTeacher(String schoolyear, int week, String teacher){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("teacher",schoolyear,week,teacher);
+//    }
+//
+//    protected void getStudent(String schoolyear, int week, String id){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("student",schoolyear,week,id);
+//    }
 
     @Override
     public void processFinish(ServerResponse response) {
         Log.i("currentdate", currentDate.getDayOfWeek().toString() + " processFinish");
         switch (response.endpoint){
-            case LOGIN:{
-                //auto login
-                prossessLogin(response);
-                break;
-            }
             case TEACHER:
             case ROOM:
             case CLASS:{
@@ -660,7 +655,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
             tw.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_outline_videocam_24, 0, 0, 0);
         }
         tw.setText(text, TextView.BufferType.SPANNABLE);
-        Spannable spannable = (Spannable) tw.getText();
+//        Spannable spannable = (Spannable) tw.getText();
 
         Pattern pattern = Pattern.compile("\\*(.*)\\*");
         SpannableStringBuilder ssb = new SpannableStringBuilder( tw.getText() );
@@ -690,34 +685,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         return tw;
     }
 
-    private void prossessLogin(ServerResponse response){
-        //auto login
-        try {
-            String message;
-            JSONObject json = new JSONObject(response.response);
-            switch (response.status){
-                case 200:{
-                    message = "You are logged in as "+json.getString("type");
-                    getClass("2021-2022",10,"B2IN");
-                    break;
-                }
-                case 500:
-                case 400:
-                case 404:
-                case 412:{
-                    message = json.getString("error");
-                    break;
-                }
-                default:{
-                    message = "Something went wrong";
-                }
-            }
-//            Toast.makeText(getActivity(), response.status+" "+message, Toast.LENGTH_LONG).show();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Processes the API response. If there is no session it logs in.
      * @param response The API response
@@ -735,7 +702,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                         //insert a single day
                         Log.i("Day",String.valueOf(day));
                         Log.i("Day",timetabledata.getJSONArray(day).toString());
-
                         insertDayEvents(timetabledata.getJSONArray(day),day);
                     }
                     break;
@@ -774,16 +740,16 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         Log.i("setData",action + " " + data);
         switch (action){
             case CLASS:
-                getClass(getSchoolyear(),getWeekNumber(),data);
+                API.getClass(getSchoolyear(),getWeekNumber(),data,this);
                 break;
             case ROOM:
-                getRoom(getSchoolyear(),getWeekNumber(),data);
+                API.getRoom(getSchoolyear(),getWeekNumber(),data,this);
                 break;
             case TEACHER:
-                getTeacher(getSchoolyear(),getWeekNumber(),data);
+                API.getTeacher(getSchoolyear(),getWeekNumber(),data,this);
                 break;
             case STUDENT:
-                getStudent(getSchoolyear(),getWeekNumber(),data);
+                API.getStudent(getSchoolyear(),getWeekNumber(),data,this);
                 break;
         }
     }

@@ -1,7 +1,5 @@
 package lu.btsin.bobtis;
 
-import org.json.JSONObject;
-
 public class ServerResponse {
     protected API.APIEndpoint endpoint;
     protected int status;

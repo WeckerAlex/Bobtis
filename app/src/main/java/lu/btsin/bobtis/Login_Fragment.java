@@ -91,9 +91,10 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
     protected void login(String username, String password){
         etUsername.setEnabled(false);
         etpassword.setEnabled(false);
-        API task =  new API();
-        task.delegate = this;
-        task.execute("login",username,password);
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("login",username,password);
+        API.login(username,password,this);
         //save the given credentials
 //        API.saveloginData(username,password,getContext().getSharedPreferences("UserPreferences",Context.MODE_PRIVATE));
     }

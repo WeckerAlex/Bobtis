@@ -5,8 +5,6 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.sql.SQLOutput;
-
 public class Student {
     private int id;
     private String name;
@@ -15,6 +13,10 @@ public class Student {
     private String iam;
     private boolean present;
     private int absenceId = 0;
+    private String absenceEndTime = "";
+    private String comment = "";
+    private int reasonId;
+    private String absenceEndDate = "";
 
     public Student(int id, String name, String firstname, String email, String iam, boolean present) {
         this.id = id;
@@ -73,6 +75,39 @@ public class Student {
     public void setAbsenceId(int absenceId) {
         this.absenceId = absenceId;
     }
+
+    public String getAbsenceEndTime() {
+        return absenceEndTime;
+    }
+
+    public void setAbsenceEndTime(String arrival) {
+        this.absenceEndTime = arrival;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public int getReasonId() {
+        return reasonId;
+    }
+
+    public void setReasonId(int reasonId) {
+        this.reasonId = reasonId;
+    }
+
+    public String getAbsenceEndDate() {
+        return absenceEndDate;
+    }
+
+    public void setAbsenceEndDate(String absenceEndDate) {
+        this.absenceEndDate = absenceEndDate;
+    }
+
 
     @Override
     public String toString() {

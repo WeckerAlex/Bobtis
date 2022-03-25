@@ -201,35 +201,35 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         Log.i("User", String.valueOf(((MainActivity)getActivity()).currentUser));
         if (((MainActivity)getActivity()).currentUser != null){
             if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_CLASSES) && (availableClasses == null || availableClasses.isEmpty())){
-                getClasses("2021-2022");
+                API.getClasses("2021-2022",this);
             }
             if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_ROOMS) && (availableRooms == null || availableRooms.isEmpty())){
-                getRooms("2021-2022");
+                API.getRooms("2021-2022",this);
             }
             if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS) && (availableTeachers == null || availableTeachers.isEmpty())){
-                getTeachers("2021-2022");
+                API.getTeachers("2021-2022",this);
             }
         }
 
     }
 
-    private void getTeachers(String schoolyear){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("teachers",schoolyear);
-    }
-
-    private void getClasses(String schoolyear){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("classes",schoolyear);
-    }
-
-    private void getRooms(String schoolyear){
-        API task =  new API();
-        task.delegate = this;
-        task.execute("rooms",schoolyear);
-    }
+//    private void getTeachers(String schoolyear){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("teachers",schoolyear);
+//    }
+//
+//    private void getClasses(String schoolyear){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("classes",schoolyear);
+//    }
+//
+//    private void getRooms(String schoolyear){
+//        API task =  new API();
+//        task.delegate = this;
+//        task.execute("rooms",schoolyear);
+//    }
 
     @Override
     public void processFinish(ServerResponse response) {

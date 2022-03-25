@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,18 +28,31 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
     int endHour;
     int endMinute;
     Reason[] reasons;
+    int reasonId;
+    String comment;
+    String schoolyear;
+    int idLesson;
     Spinner sp;
     NumberPicker npHour;
     NumberPicker npMinute;
     EditText commentET;
+    AsyncResponse parent;
 
-    public Absences_dialog(int id_absence, String endTime) {
+    public Absences_dialog(int id_absence, String arrival, int reasonId, String comment,String schoolyear,int idLesson, AsyncResponse parent) {
         super();
         absenceId = id_absence;
-        int[] temp = new int[2];
-        temp = Arrays.stream(endTime.split(":")).mapToInt(Integer::parseInt).limit(2).toArray();
+        int[] temp = {0,0};
+        String[] tempString = arrival.split(":");
+        if (tempString.length == 2){
+            temp = Arrays.stream(tempString).mapToInt(Integer::parseInt).limit(2).toArray();
+        }
         endHour = temp[0];
         endMinute = temp[1];
+        this.reasonId = reasonId;
+        this.comment = comment;
+        this.parent = parent;
+        this.schoolyear = schoolyear;
+        this.idLesson = idLesson;
     }
 
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -51,16 +63,16 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
                 .setPositiveButton("Save", (dialog, id) -> {})
                 .setNeutralButton("Cancel", (dialog, id) -> {})
                 .setNegativeButton("Delete", (dialog, id) -> {});
-        getReasons();
+        API.getReasons(this);
         // Create the AlertDialog object and return it
         AlertDialog dialog = builder.create();
         dialog.setOnShowListener(dialogInterface -> {
-            Button buttonpositive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-            Button buttonneutral = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEUTRAL);
-            Button buttonnegative = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
-            buttonpositive.setOnClickListener(view -> saveUpdate(absenceId,commentET.getText().toString(),reasons[sp.getSelectedItemPosition()].id_reason,npHour.getValue(),npMinute.getValue()));
+            Button buttonpositive = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            Button buttonneutral = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+            Button buttonnegative = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            buttonpositive.setOnClickListener(view -> API.updateAbsence(absenceId,commentET.getText().toString(),reasons[sp.getSelectedItemPosition()].id_reason,npHour.getValue()+":"+npMinute.getValue(),this));
             buttonneutral.setOnClickListener(view -> dismiss());
-            buttonnegative.setOnClickListener(view -> deleteAbsence(absenceId));
+            buttonnegative.setOnClickListener(view -> API.deleteAbsence(absenceId,this));
         });
         return dialog;
     }
@@ -79,6 +91,7 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
         npMinute.setMinValue(0);
         npMinute.setMaxValue(59);
         npMinute.setValue(endMinute);
+        commentET.setText(comment);
         return vw;
     }
     private void initElements(){
@@ -95,7 +108,12 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
 
             }
         });
-
+        for (int i = 0; i < reasons.length; i++) {
+            if (reasons[i].id_reason == reasonId){
+                Log.i("Dialoginit", String.valueOf(reasons[i].id_reason));
+                sp.setSelection(i);
+            }
+        }
     }
 
     @Override
@@ -106,8 +124,6 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
                 reasons = jsontoArrayList(response.response);
                 initElements();
                 break;
-            case ABSENCES:
-                break;
             case ABSENCE_SPEED:
                 break;
             case ABSENCE_UPDATE:
@@ -115,6 +131,7 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
                     case 200:{
                         Toast.makeText(getContext(), "Absence updated", Toast.LENGTH_SHORT).show();
                         dismiss();
+                        API.getStudents(schoolyear,idLesson,parent);
                         break;
                     }
                     default:{
@@ -129,6 +146,7 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
                     case 200:{
                         Toast.makeText(getContext(), "Absence removed", Toast.LENGTH_SHORT).show();
                         dismiss();
+                        API.getStudents(schoolyear,idLesson,parent);
                         break;
                     }
                     default:{
@@ -141,25 +159,7 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
         }
     }
 
-    private void getReasons(){
-        API task =  new API();
-        task.delegate = this;
-        task.execute(/*API.APIEndpoint.AREASONS*/"areasons");
-    }
 
-    private void saveUpdate(int id_absence, String comment, int id_reason, int endHour, int endMinute){
-        Log.i("Absences_dialog","saveUpdate");
-        API task =  new API();
-        task.delegate = this;
-        task.execute(/*API.APIEndpoint.ABSENCE_UPDATE*/"ABSENCE_UPDATE",id_absence,comment,id_reason,endHour+":"+endMinute);
-    }
-
-    private void deleteAbsence(int absenceId) {
-        Log.i("Absences_dialog","deleteAbsence");
-        API task =  new API();
-        task.delegate = this;
-        task.execute(/*API.APIEndpoint.ABSENCE_REMOVE*/"ABSENCE_REMOVE",absenceId);
-    }
 
     private Reason[] jsontoArrayList(String response){
         ArrayList<Reason> arr = new ArrayList<>();
