@@ -314,7 +314,17 @@ class API extends AsyncTask {
         task.execute(APIEndpoint.ABSENCES,schoolyear,idLesson);
     }
 //    HOMEWORKS,
+    public static void getHomeworks(String schoolyear, int idLesson,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORKS,schoolyear,idLesson);
+    }
 //    TEST,
+    public static void getTest(int idLesson,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.TEST,idLesson);
+    }
 //    ABSENCE_SPEED,
     public static void setAbsenceSpeed(int id_lesson, int id_student,AsyncResponse listener){
         API task =  new API();
@@ -346,47 +356,47 @@ class API extends AsyncTask {
         task.execute(APIEndpoint.HOMEWORK_ADD,id_lesson,content,date_due);
     }
 //    HOMEWORK_REMOVE,
-public static void removeHomework(int id_homework,AsyncResponse listener){
-    API task =  new API();
-    task.delegate = listener;
-    task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
-}
+    public static void removeHomework(int id_homework,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
+    }
 //    HOMEWORK_UPDATE,
-public static void updateHomework(int id_homework,AsyncResponse listener){
-    API task =  new API();
-    task.delegate = listener;
-    task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
-}
+    public static void updateHomework(int id_homework,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
+    }
 //    TEST_ADD,
-public static void addTest(int id_lesson,String content,String title,AsyncResponse listener){
-    API task =  new API();
-    task.delegate = listener;
-    task.execute(APIEndpoint.HOMEWORK_ADD,id_lesson,content,title);
-}
+    public static void addTest(int id_lesson,String content,String title,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,id_lesson,content,title);
+    }
 //    TEST_REMOVE,
-public static void removeTest(int id_test,AsyncResponse listener){
-    API task =  new API();
-    task.delegate = listener;
-    task.execute(APIEndpoint.HOMEWORK_ADD,id_test);
-}
+    public static void removeTest(int id_test,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,id_test);
+    }
 //    TEST_UPDATE,
-public static void updateTest(int id_test,String content,String title,AsyncResponse listener){
-    API task =  new API();
-    task.delegate = listener;
-    task.execute(APIEndpoint.HOMEWORK_ADD,id_test,content,title);
-}
+    public static void updateTest(int id_test,String content,String title,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,id_test,content,title);
+    }
 //    TESTS;
-    public static void getTest(int id_student,AsyncResponse listener){
+    public static void getTests(int id_student,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
         task.execute(APIEndpoint.HOMEWORK_ADD,id_student);
     }
-    public static void getTest(String schoolyear,String classe,AsyncResponse listener){
+    public static void getTests(String schoolyear,String classe,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
         task.execute(APIEndpoint.HOMEWORK_ADD,schoolyear,classe);
     }
-    public static void getTest(String schoolyear,String classe,String subject,AsyncResponse listener){
+    public static void getTests(String schoolyear,String classe,String subject,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
         task.execute(APIEndpoint.HOMEWORK_ADD,schoolyear,classe,subject);

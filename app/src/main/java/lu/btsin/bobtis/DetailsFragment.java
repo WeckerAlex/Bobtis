@@ -40,7 +40,8 @@ public class DetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         infofragment.setData(schoolyear,id_lesson,is_allowed_create_absences,classname,branchname,starttime,endtime,day);
-        absencesfragment.setData(schoolyear,id_lesson,is_allowed_create_absences,classname,branchname,starttime,endtime,day);
+        absencesfragment.setData(schoolyear,id_lesson,is_allowed_create_absences);
+        homeworkfragment.setData(schoolyear,id_lesson);
         switchFragment(infofragment);
     }
 
