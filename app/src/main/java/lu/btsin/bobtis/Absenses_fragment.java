@@ -40,7 +40,7 @@ import java.util.HashMap;
  */
 public class Absenses_fragment extends Fragment implements AsyncResponse {
 
-    private ArrayList<Student> data;
+    private ArrayList<Student> data = new ArrayList<>();
     private static ListAdapter adapter;
     private boolean is_allowed_create_absences;
     private String classname;
@@ -75,20 +75,23 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.i("Atest","onCreateView");
         View view = inflater.inflate(R.layout.fragment_absenses,container,false);
         return view;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i("Atest","onCreate");
         super.onCreate(savedInstanceState);
         Log.i("enumerstudent", "onCreate");
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        Log.i("Atest","onViewCreated");
         init();
+        super.onViewCreated(view, savedInstanceState);
     }
 
     public void init(){
@@ -188,14 +191,15 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
         }
         adapter.setData(data);
         list.setAdapter(adapter);
-        TextView twclasse = getView().findViewById(R.id.tv_class);
-        TextView twbranch = getView().findViewById(R.id.tv_branch);
-        TextView twlesson = getView().findViewById(R.id.tv_lessonDay);
-        TextView twperiod = getView().findViewById(R.id.tv_period);
-        twclasse.setText(classname);
-        twbranch.setText(branchname);
-        twlesson.setText(day);
-        twperiod.setText(starttime + " - " + endtime);
+//        TextView twclasse = getView().findViewById(R.id.tv_class);
+//        TextView twbranch = getView().findViewById(R.id.tv_branch);
+//        TextView twlesson = getView().findViewById(R.id.tv_lessonDay);
+//        TextView twperiod = getView().findViewById(R.id.tv_period);
+//        twclasse.setText(classname);
+//        twbranch.setText(branchname);
+//        twlesson.setText(day);
+//        twperiod.setText(starttime + " - " + endtime);
+        API.getStudents(schoolyear, id_lesson,this);
     }
 
     private String formathour(String absenceEndTime) {
@@ -211,7 +215,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
     }
 
     public void setData(String schoolyear,int id_lesson,boolean is_allowed_create_absences,String classname,String branchname,String starttime,String endtime,String date) {
-        API.getStudents(schoolyear, id_lesson,this);
+//        API.getStudents(schoolyear, id_lesson,this);
         this.schoolyear = schoolyear;
         this.id_lesson = id_lesson;
         this.is_allowed_create_absences = is_allowed_create_absences;
@@ -249,6 +253,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                 switch (response.status){
                     case 200:{
                         try {
+                            Log.i("Atest","200");
                             data.clear();
                             JSONArray json = new JSONArray(response.response);
                             for (int i = 0; i < json.length(); i++) {

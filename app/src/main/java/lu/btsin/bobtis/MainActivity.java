@@ -28,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
     private Fragment timetableFragment = new Timetable_fragment();
     private Fragment loginFragment = new Login_Fragment();
     private Fragment searchFragment = new Search_Fragment();
-    private Fragment absensesFragment = new Absenses_fragment();
+//    private Fragment absensesFragment = new Absenses_fragment();
+    private Fragment detailsfragment = new DetailsFragment();
     //private SharedPreferences prefs;
     public User currentUser;
 
@@ -216,10 +217,12 @@ public class MainActivity extends AppCompatActivity {
         switchFragment(timetableFragment);
     }
 
-    public void displayAbsences(int lessonId,String schoolyear,boolean allow_Adding_Absences,String className,String branchName,String startTime,String endTime,String date){
+    public void displayDetails(int lessonId, String schoolyear, boolean allow_Adding_Absences, String className, String branchName, String startTime, String endTime, String date){
         Log.i("Segue","Absences: "+lessonId);
-        ((Absenses_fragment)absensesFragment).setData(schoolyear,lessonId,allow_Adding_Absences,className,branchName,startTime,endTime,date);
-        switchFragment(absensesFragment);
+//        ((Absenses_fragment)absensesFragment).setData(schoolyear,lessonId,allow_Adding_Absences,className,branchName,startTime,endTime,date);
+//        switchFragment(absensesFragment);
+        ((DetailsFragment)detailsfragment).setData(schoolyear,lessonId,allow_Adding_Absences,className,branchName,startTime,endTime,date);
+        switchFragment(detailsfragment);
     }
 
 }

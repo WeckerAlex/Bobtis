@@ -27,5 +27,7 @@
     <string name="Apply">Apply</string>
     <string name="Branch">Branch</string>
     <string name="Period">Period</string>
-    <string name="Day" >Day</string>
+    <string name="Day">Day</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

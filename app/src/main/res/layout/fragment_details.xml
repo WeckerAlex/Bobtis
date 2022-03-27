@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/infobutton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Info"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
+        <Button
+            android:id="@+id/absencesbutton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Absences"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"/>
+        <Button
+            android:id="@+id/homeworkbutton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Homework"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"/>
+        <Button
+            android:id="@+id/testsbutton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/Teacher"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="bold"
+            android:background="?android:attr/selectableItemBackground"/>
+
+    </LinearLayout>
+    <androidx.fragment.app.FragmentContainerView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/details_container_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="lu.btsin.bobtis.InfoFragment"
+        />
+
+</LinearLayout>

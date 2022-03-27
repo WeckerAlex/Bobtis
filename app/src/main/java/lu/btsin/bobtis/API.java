@@ -49,13 +49,18 @@ class API extends AsyncTask {
         STUDENTS,
         ABSENCES,
         HOMEWORKS,
+        TEST,
         ABSENCE_SPEED,
         ABSENCE_UPDATE,
         ABSENCE_SHORTEN,
         ABSENCE_REMOVE,
         HOMEWORK_ADD,
         HOMEWORK_REMOVE,
-        HOMEWORK_UPDATE;
+        HOMEWORK_UPDATE,
+        TEST_ADD,
+        TEST_REMOVE,
+        TEST_UPDATE,
+        TESTS;
 
         @Override
         public String toString() {
@@ -153,6 +158,9 @@ class API extends AsyncTask {
                 case TIMEGRID:
                     data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "class=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
                     break;
+                case TEST:
+                    data = "id_lesson=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
+                    break;
                 case ABSENCE_SPEED:
                     data = "id_lesson=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_student=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
                     break;
@@ -164,13 +172,39 @@ class API extends AsyncTask {
                     data = "id_absence=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
                     break;
                 case HOMEWORK_ADD:
-                    Log.i("API",endpoint.toString());
+                    data = "id_lesson=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "content=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "date_due=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
                     break;
                 case HOMEWORK_REMOVE:
-                    Log.i("API",endpoint.toString());
+                    data = "id_homework=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
                     break;
                 case HOMEWORK_UPDATE:
-                    Log.i("API",endpoint.toString());
+                    data = "id_homework=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "content=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "date_due=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
+                    break;
+                case TEST_ADD:
+                    data = "id_lesson=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "content=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "title=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
+                    break;
+                case TEST_REMOVE:
+                    data = "id_test=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
+                    break;
+                case TEST_UPDATE:
+                    data = "id_test=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "content=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "title=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
+                    break;
+                case TESTS:
+                    switch (objects.length){
+                        case 2:{
+                            data = "id_student=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
+                            break;
+                        }
+                        case 3:{
+                            data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "class=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
+                            break;
+                        }
+                        case 4:{
+                            data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "class=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "subject=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
+                            break;
+                        }
+                    }
+                    data = "id_lesson=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
                     break;
             }
         } catch (UnsupportedEncodingException e) {
@@ -280,6 +314,7 @@ class API extends AsyncTask {
         task.execute(APIEndpoint.ABSENCES,schoolyear,idLesson);
     }
 //    HOMEWORKS,
+//    TEST,
 //    ABSENCE_SPEED,
     public static void setAbsenceSpeed(int id_lesson, int id_student,AsyncResponse listener){
         API task =  new API();
@@ -305,6 +340,55 @@ class API extends AsyncTask {
         task.execute(APIEndpoint.ABSENCE_REMOVE,absenceId);
     }
 //    HOMEWORK_ADD,
+    public static void addHomework(int id_lesson, String content,String date_due,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,id_lesson,content,date_due);
+    }
 //    HOMEWORK_REMOVE,
-//    HOMEWORK_UPDATE
+public static void removeHomework(int id_homework,AsyncResponse listener){
+    API task =  new API();
+    task.delegate = listener;
+    task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
+}
+//    HOMEWORK_UPDATE,
+public static void updateHomework(int id_homework,AsyncResponse listener){
+    API task =  new API();
+    task.delegate = listener;
+    task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
+}
+//    TEST_ADD,
+public static void addTest(int id_lesson,String content,String title,AsyncResponse listener){
+    API task =  new API();
+    task.delegate = listener;
+    task.execute(APIEndpoint.HOMEWORK_ADD,id_lesson,content,title);
+}
+//    TEST_REMOVE,
+public static void removeTest(int id_test,AsyncResponse listener){
+    API task =  new API();
+    task.delegate = listener;
+    task.execute(APIEndpoint.HOMEWORK_ADD,id_test);
+}
+//    TEST_UPDATE,
+public static void updateTest(int id_test,String content,String title,AsyncResponse listener){
+    API task =  new API();
+    task.delegate = listener;
+    task.execute(APIEndpoint.HOMEWORK_ADD,id_test,content,title);
+}
+//    TESTS;
+    public static void getTest(int id_student,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,id_student);
+    }
+    public static void getTest(String schoolyear,String classe,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,schoolyear,classe);
+    }
+    public static void getTest(String schoolyear,String classe,String subject,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORK_ADD,schoolyear,classe,subject);
+    }
 }

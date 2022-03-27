@@ -1,10 +1,6 @@
 package lu.btsin.bobtis;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -13,9 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.Spanned;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
@@ -41,7 +35,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -501,7 +494,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                     //user has the permission to insert absences or is permitted to see all the timetables
                     mainLayout.setOnClickListener(view -> {
                         try {
-                            ((MainActivity)getActivity()).displayAbsences(schoolclass.getInt("id_lesson"),getSchoolyear(),is_allowed_to_mark_absences,classe,subject,schoolclass.getString("begin"),schoolclass.getString("end"),schoolclass.getString("date"));
+                            ((MainActivity)getActivity()).displayDetails(schoolclass.getInt("id_lesson"),getSchoolyear(),is_allowed_to_mark_absences,classe,subject,schoolclass.getString("begin"),schoolclass.getString("end"),schoolclass.getString("date"));
                             Log.i("enumerstudent", String.valueOf(schoolclass.getInt("id_lesson")));
                         } catch (JSONException e) {
                             Log.e("Event_setListener",schoolclass.toString());
