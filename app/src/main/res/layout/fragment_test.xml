@@ -3,30 +3,74 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".HomeworkFragment">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@color/timetable_background">
 
-        <ListView
-            android:id="@+id/testList"
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:dividerHeight="3dp"
-            android:paddingHorizontal="3dp"
-            android:paddingVertical="3dp"
-            android:background="@color/timetable_background"
-            android:layout_weight="1" />
+            android:textColorHint="@color/listelement"
+            app:hintTextColor="@color/listelement">
+            <EditText
+                android:id="@+id/ETTestTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/timetable_background"
+                android:layout_margin="5dp"
+                android:textSize="20sp"
+                android:inputType="text"
+                android:lines="1"
+                android:hint="Title"
+                android:textCursorDrawable="@color/listelement"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:textColorHint="@color/listelement"
+            app:hintTextColor="@color/listelement"
+            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:background="@color/timetable_background">
+            <EditText
+                android:id="@+id/ETTestContent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="20sp"
+                android:gravity="start"
+                android:inputType="textMultiLine"
+                android:background="@color/timetable_background"
+                android:hint="Content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/removeTestButton"
+                android:layout_width="wrap_content"
+                android:backgroundTint="@color/design_default_color_error"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                android:background="@drawable/ic_baseline_delete_24"
+                android:layout_margin="15dp" />
+            <ImageButton
+                android:id="@+id/addUpdateTestButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_baseline_add_circle_outline_24"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="15dp" />
+        </LinearLayout>
+
 
     </LinearLayout>
-
-    <ImageButton
-        android:id="@+id/addTestButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/ic_baseline_add_circle_outline_24"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="15dp" />
 
 </FrameLayout>

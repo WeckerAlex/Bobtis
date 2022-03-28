@@ -1,5 +1,10 @@
 package lu.btsin.bobtis;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
+import static androidx.core.content.ContextCompat.getDrawable;
+import static androidx.core.content.ContextCompat.getSystemService;
+
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -19,7 +24,9 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -29,6 +36,7 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -39,11 +47,15 @@ import java.util.ArrayList;
  */
 public class TestFragment extends Fragment implements AsyncResponse {
 
-    private ArrayList<Test> data = new ArrayList<>();
-    private static ListAdapter adapter;
     private boolean is_allowed_create_absences;
-    private String schoolyear;
     private int id_lesson;
+    private EditText eTTitle;
+    private EditText eTContent;
+    private ImageButton removeButton;
+    private ImageButton updateButton;
+    private ImageButton editButton;
+    private Test test;
+    private boolean editingMode = false;
 
     public TestFragment() {
         // Required empty public constructor
@@ -74,120 +86,130 @@ public class TestFragment extends Fragment implements AsyncResponse {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        init();
         super.onViewCreated(view, savedInstanceState);
-    }
-
-    public void init(){
-        ListView list = getView().findViewById(R.id.testList);
-        Log.i("enumerstudent_init_view", "list is null: " +(list==null));
-        Log.i("enumerstudent_init_view", "context is null: " +(getContext()==null));
-        if (adapter == null){
-            data = new ArrayList<>();
-            adapter = new ListAdapter<String>() {
-                @Override
-                public View getView(int position, View convertView, ViewGroup parent) {
-                    Test test = data.get(position);
-                    TextView tw = new TextView(parent.getContext());
-                    LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
-                    layoutParamsText.weight = 1;
-
-                    TextView twdate = new TextView(parent.getContext());
-
-                    LinearLayout.LayoutParams textLayoutparams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT);
-                    textLayoutparams.weight = 1;
-                    textLayoutparams.setMargins(1,1,1,1);
-                    LinearLayout textLayout = new LinearLayout(parent.getContext());
-                    textLayout.setOrientation(LinearLayout.VERTICAL);
-                    textLayout.setGravity(Gravity.CENTER_VERTICAL);
-
-                    textLayout.setLayoutParams(textLayoutparams);
-
-
-                    tw.setPadding(1,0,1,0);
-                    tw.setTextSize(18);
-                    tw.setLayoutParams(layoutParamsText);
-                    tw.setText(test.getTitle());
-                    twdate.setTextSize(13);
-                    twdate.setPadding(1,0,1,0);
-                    twdate.setLayoutParams(layoutParamsText);
-                    twdate.setText(test.getContent());
-
-                    LinearLayout ll = new LinearLayout(parent.getContext());
-                    ll.setGravity(Gravity.CLIP_HORIZONTAL);
-                    ll.setBackgroundResource(R.drawable.coursebackground);
-                    ((GradientDrawable) ll.getBackground()).setColor(ContextCompat.getColor(getContext(),R.color.listelement));
-                    TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT);
-                    ll.setPadding(10,0,10,0);
-                    layoutParams.setMargins(0,3,0,3);
-                    ll.setLayoutParams(layoutParams);
-
-                    ll.setOrientation(LinearLayout.HORIZONTAL);
-                    textLayout.addView(tw);
-                    textLayout.addView(twdate);
-                    ll.addView(textLayout);
-
-                    if (is_allowed_create_absences){
-                        ImageButton buttonAbsence = new ImageButton(parent.getContext());
-                        buttonAbsence.setImageTintList(ColorStateList.valueOf(Color.BLACK));
-                        LinearLayout.LayoutParams layoutParamsInsert = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT);
-                        layoutParamsInsert.setMargins(0,3,0,3);
-                        buttonAbsence.setLayoutParams(layoutParamsInsert);
-                        buttonAbsence.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_edit_24));
-                        buttonAbsence.setOnClickListener(view -> absencebuttonclick(test));
-                        ll.addView(buttonAbsence);
-                    }
-                    return ll;
-                }
-
-                @Override
-                public boolean filterEntry(String entry, CharSequence constraint) {
-                    return ((entry).toUpperCase().contains(((String) constraint).toUpperCase()));
-                }
-            };
-        }
-        adapter.setData(data);
-        list.setAdapter(adapter);
+        eTTitle = getView().findViewById(R.id.ETTestTitle);
+        eTContent = getView().findViewById(R.id.ETTestContent);
+        removeButton = getView().findViewById(R.id.removeTestButton);
+        updateButton = getView().findViewById(R.id.addUpdateTestButton);
+        eTTitle.setEnabled(false);
+        eTContent.setEnabled(false);
+        removeButton.setOnClickListener(v -> API.removeTest(test.getId_test(),this));
+        updateButton.setOnClickListener(v -> {
+            if (editingMode) {
+                setTest();
+            } else {
+                enableEditing(!editingMode);
+            }
+        });
         API.getTest(id_lesson,this);
     }
 
-    public void setData(String schoolyear,int id_lesson) {
-        this.schoolyear = schoolyear;
+    private void enableEditing(boolean editable){
+        editingMode = editable;
+        eTTitle.setEnabled(editable);
+        eTContent.setEnabled(editable);
+        if (test == null && editable){
+            eTTitle.setText("");
+            eTContent.setText("");
+            updateButton.setBackgroundResource(R.drawable.ic_baseline_save_24);
+            eTTitle.requestFocus();
+            InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(INPUT_METHOD_SERVICE);
+            manager.showSoftInput(eTTitle, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    private void setTest() {
+        if (test != null) {
+            //update the test
+            API.updateTest(test.getId_test(),eTContent.getText().toString(),eTTitle.getText().toString(),this);
+        }else{
+            //create the test
+            API.addTest(id_lesson,eTContent.getText().toString(),eTTitle.getText().toString(),this);
+        }
+        enableEditing(false);
+    }
+
+
+    public void setData(int id_lesson) {
         this.id_lesson = id_lesson;
     }
 
-    private void absencebuttonclick(Test test){
-        //student has already got an absence
-        //update absence
-//        Test_dialog dialog = new Test_dialog(test,schoolyear,id_lesson,this);
-//        dialog.show(getParentFragmentManager(),null);
+    private void initUI(Test test){
+        if (test != null) {
+            eTTitle.setText(test.getTitle());
+            eTContent.setText(test.getContent());
+            removeButton.setVisibility(View.VISIBLE);
+            updateButton.setVisibility(View.VISIBLE);
+            updateButton.setBackgroundResource(R.drawable.ic_baseline_save_24);
+        }else{
+            eTTitle.setText("no test");
+            eTContent.setText("no test");
+            removeButton.setVisibility(View.INVISIBLE);
+            updateButton.setVisibility(View.VISIBLE);
+
+            updateButton.setBackgroundResource(R.drawable.ic_baseline_add_circle_outline_24);
+        }
     }
 
     @Override
     public void processFinish(ServerResponse response) {
         switch (response.endpoint){
-            case HOMEWORKS:
-                Log.i("HOMEWORKS_fragment","HOMEWORKS");
+            case TEST:
+                Log.i("TEST_fragment","HOMEWORKS");
                 switch (response.status){
                     case 200:{
+                        //there was a test
                         try {
-                            data.clear();
-                            JSONArray json = new JSONArray(response.response);
-                            for (int i = 0; i < json.length(); i++) {
-                                Test test = Test.getTest(json.getJSONObject(i));
-                                data.add(test);
-                            }
-                            adapter.notifyDataSetChanged();
+                            JSONObject json = new JSONObject(response.response);
+                            test = Test.getTest(json);
                         } catch (JSONException e) {
-                            Log.i("enumerstudent", data.toString());
                             e.printStackTrace();
                         }
                         break;
                     }
+                    case 404:{
+                        break;
+                    }
                     default:{
+                        test = null;
                         Toast.makeText(getActivity(),response.response,Toast.LENGTH_LONG).show();
                     }
                 }
+                initUI(test);
+                break;
+            case TEST_REMOVE:
+                switch (response.status){
+                    case 200:
+                        test = null;
+                        initUI(null);
+                        enableEditing(false);
+                        Toast.makeText(getContext(), "Test removed", Toast.LENGTH_SHORT).show();
+                        updateButton.setBackgroundResource(R.drawable.ic_baseline_add_circle_outline_24);
+                        break;
+                    default:
+                        Toast.makeText(getContext(), response.response, Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                break;
+            case TEST_UPDATE:
+                switch (response.status){
+                    case 200:
+                        try {
+                            JSONObject json = new JSONObject(response.response);
+                            test = Test.getTest(json);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        initUI(test);
+                        updateButton.setBackgroundResource(R.drawable.ic_baseline_edit_24);
+                        Toast.makeText(getContext(), "Test updated", Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Toast.makeText(getContext(), response.response, Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                break;
+            case TEST_ADD:
                 break;
         }
     }

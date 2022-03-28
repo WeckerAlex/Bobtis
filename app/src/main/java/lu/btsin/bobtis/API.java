@@ -1,8 +1,5 @@
 package lu.btsin.bobtis;
 
-import static lu.btsin.bobtis.API.APIEndpoint.ABSENCE_SHORTEN;
-import static lu.btsin.bobtis.API.APIEndpoint.ABSENCE_SPEED;
-import static lu.btsin.bobtis.API.APIEndpoint.STUDENTS;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -281,7 +278,7 @@ class API extends AsyncTask {
     public static void getClass(String schoolyear, int week, String requestedclass,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute("class",schoolyear,week,requestedclass);
+        task.execute(APIEndpoint.CLASS,schoolyear,week,requestedclass);
     }
 //    TEACHER,
     public static void  getTeacher(String schoolyear, int week, String id, AsyncResponse listener){
@@ -293,7 +290,7 @@ class API extends AsyncTask {
     public static void getRoom(String schoolyear, int week, String room, AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute("room",schoolyear,week,room);
+        task.execute(APIEndpoint.ROOM,schoolyear,week,room);
     }
 //    STUDENT,
     public static void getStudent(String schoolyear, int week, String id,AsyncResponse listener){
@@ -305,7 +302,7 @@ class API extends AsyncTask {
     public static void getStudents(String schoolyear, int idLesson, AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(STUDENTS,schoolyear,idLesson);
+        task.execute(APIEndpoint.STUDENTS,schoolyear,idLesson);
     }
 //    ABSENCES,
     public static void getAbsences(String schoolyear, int idLesson,AsyncResponse listener){
@@ -329,7 +326,7 @@ class API extends AsyncTask {
     public static void setAbsenceSpeed(int id_lesson, int id_student,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(ABSENCE_SPEED,id_lesson,id_student);
+        task.execute(APIEndpoint.ABSENCE_SPEED,id_lesson,id_student);
     }
 //    ABSENCE_UPDATE,
     public static void updateAbsence(int id_absence, String comment, int id_reason,String endTime,AsyncResponse listener){
@@ -341,7 +338,7 @@ class API extends AsyncTask {
     public static void shortenAbsence(int id_absence,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(ABSENCE_SHORTEN,id_absence);
+        task.execute(APIEndpoint.ABSENCE_SHORTEN,id_absence);
     }
 //    ABSENCE_REMOVE,
     public static void deleteAbsence(int absenceId,AsyncResponse listener) {
@@ -359,7 +356,7 @@ class API extends AsyncTask {
     public static void removeHomework(int id_homework,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
+        task.execute(APIEndpoint.HOMEWORK_REMOVE,id_homework);
     }
 //    HOMEWORK_UPDATE,
     public static void updateHomework(int id_homework,String content,String date_due,AsyncResponse listener){
@@ -371,34 +368,34 @@ class API extends AsyncTask {
     public static void addTest(int id_lesson,String content,String title,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(APIEndpoint.HOMEWORK_ADD,id_lesson,content,title);
+        task.execute(APIEndpoint.TEST_ADD,id_lesson,content,title);
     }
 //    TEST_REMOVE,
     public static void removeTest(int id_test,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(APIEndpoint.HOMEWORK_ADD,id_test);
+        task.execute(APIEndpoint.TEST_REMOVE,id_test);
     }
 //    TEST_UPDATE,
     public static void updateTest(int id_test,String content,String title,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(APIEndpoint.HOMEWORK_ADD,id_test,content,title);
+        task.execute(APIEndpoint.TEST_UPDATE,id_test,content,title);
     }
 //    TESTS;
     public static void getTests(int id_student,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(APIEndpoint.HOMEWORK_ADD,id_student);
+        task.execute(APIEndpoint.TESTS,id_student);
     }
     public static void getTests(String schoolyear,String classe,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(APIEndpoint.HOMEWORK_ADD,schoolyear,classe);
+        task.execute(APIEndpoint.TESTS,schoolyear,classe);
     }
     public static void getTests(String schoolyear,String classe,String subject,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(APIEndpoint.HOMEWORK_ADD,schoolyear,classe,subject);
+        task.execute(APIEndpoint.TESTS,schoolyear,classe,subject);
     }
 }

@@ -42,6 +42,7 @@ public class DetailsFragment extends Fragment {
         infofragment.setData(schoolyear,id_lesson,is_allowed_create_absences,classname,branchname,starttime,endtime,day);
         absencesfragment.setData(schoolyear,id_lesson,is_allowed_create_absences);
         homeworkfragment.setData(schoolyear,id_lesson);
+        testfragment.setData(id_lesson);
         switchFragment(infofragment);
     }
 

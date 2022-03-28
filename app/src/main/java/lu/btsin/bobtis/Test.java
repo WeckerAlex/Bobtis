@@ -6,11 +6,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Test {
-    private String id_test;
+    private int id_test;
     private String title;
     private String content;
 
-    public Test(String id_test, String title, String content) {
+    public Test(int id_test, String title, String content) {
         this.id_test = id_test;
         this.title = title;
         this.content = content;
@@ -18,7 +18,7 @@ public class Test {
 
     public static Test getTest(JSONObject json){
         try {
-            String id_test = json.getString("id_test");
+            int id_test = Integer.parseInt(json.getString("id_test"));
             String title = json.getString("title");
             String content = json.getString("content");
             return new Test(id_test,title,content);
@@ -29,7 +29,7 @@ public class Test {
         }
     }
 
-    public String getId_test() {
+    public int getId_test() {
         return id_test;
     }
 

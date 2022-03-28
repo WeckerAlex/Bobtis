@@ -29,6 +29,7 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
 
     public Homework_dialog(int id_homework, int lessonId, String content,String date, String schoolyear, AsyncResponse parent) {
         super();
+        Log.i("lessonIdlessonId", String.valueOf(lessonId));
         this.is_creating = false;
         this.homeworkId = id_homework;
         this.lessonId = lessonId;
@@ -74,6 +75,7 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
             buttonneutral.setOnClickListener(view -> dismiss());
             buttonnegative.setOnClickListener(view -> {
                 if (!is_creating){
+                    Log.i("","API.removeHomework");
                     API.removeHomework(homeworkId, this);
                 }
             });
