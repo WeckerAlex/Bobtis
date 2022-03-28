@@ -362,10 +362,10 @@ class API extends AsyncTask {
         task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
     }
 //    HOMEWORK_UPDATE,
-    public static void updateHomework(int id_homework,AsyncResponse listener){
+    public static void updateHomework(int id_homework,String content,String date_due,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute(APIEndpoint.HOMEWORK_ADD,id_homework);
+        task.execute(APIEndpoint.HOMEWORK_UPDATE,id_homework,content,date_due);
     }
 //    TEST_ADD,
     public static void addTest(int id_lesson,String content,String title,AsyncResponse listener){

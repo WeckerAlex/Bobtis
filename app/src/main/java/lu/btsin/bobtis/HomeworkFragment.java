@@ -10,16 +10,11 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import android.text.SpannableStringBuilder;
-import android.text.style.CharacterStyle;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.StrikethroughSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -29,10 +24,8 @@ import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -77,6 +70,13 @@ public class HomeworkFragment extends Fragment implements AsyncResponse {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         init();
+        ImageButton addButton = getView().findViewById(R.id.addHomeworkButton);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addbuttonclick();
+            }
+        });
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -92,43 +92,21 @@ public class HomeworkFragment extends Fragment implements AsyncResponse {
                     Homework homework = data.get(position);
                     TextView twcontent = new TextView(parent.getContext());
                     TextView twdate = new TextView(parent.getContext());
-                    TextView twtype = new TextView(parent.getContext());
-                    TextView twtitle = new TextView(parent.getContext());
-                    LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+                    LinearLayout.LayoutParams layoutParamsText = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT);
                     layoutParamsText.weight = 1;
 
 
                     twcontent.setPadding(1,0,1,0);
                     twcontent.setTextSize(13);
+                    twcontent.setGravity(Gravity.CENTER_VERTICAL);
                     twcontent.setLayoutParams(layoutParamsText);
                     twcontent.setText(homework.getContent());
-                    twdate.setTextSize(13);
+
                     twdate.setPadding(1,0,1,0);
+                    twdate.setTextSize(13);
+                    twdate.setGravity(Gravity.CENTER_VERTICAL);
                     twdate.setLayoutParams(layoutParamsText);
                     twdate.setText(homework.getDate_due());
-                    twtype.setTextSize(18);
-                    twtype.setPadding(1,0,1,0);
-                    twtype.setLayoutParams(layoutParamsText);
-                    twtype.setText(homework.getType());
-                    twtitle.setTextSize(18);
-                    twtitle.setPadding(1,0,1,0);
-                    twtitle.setLayoutParams(layoutParamsText);
-                    twtitle.setText(homework.getTitle());
-
-                    LinearLayout.LayoutParams typeLayoutparams = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT);
-                    typeLayoutparams.weight = 1;
-                    typeLayoutparams.setMargins(1,1,1,1);
-                    LinearLayout.LayoutParams titleLayoutparams = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT);
-                    titleLayoutparams.weight = 1;
-                    titleLayoutparams.setMargins(1,1,1,1);
-
-                    LinearLayout lltype = new LinearLayout(parent.getContext());
-                    lltype.setLayoutParams(typeLayoutparams);
-                    lltype.setOrientation(LinearLayout.VERTICAL);
-                    LinearLayout lltitle = new LinearLayout(parent.getContext());
-                    lltitle.setLayoutParams(titleLayoutparams);
-                    lltitle.setOrientation(LinearLayout.VERTICAL);
-
 
                     LinearLayout ll = new LinearLayout(parent.getContext());
                     ll.setGravity(Gravity.CLIP_HORIZONTAL);
@@ -140,21 +118,17 @@ public class HomeworkFragment extends Fragment implements AsyncResponse {
                     ll.setLayoutParams(layoutParams);
 
                     ll.setOrientation(LinearLayout.HORIZONTAL);
-                    lltype.addView(twtype);
-                    lltype.addView(twdate);
-                    lltitle.addView(twtitle);
-                    lltitle.addView(twcontent);
-                    ll.addView(lltype);
-                    ll.addView(lltitle);
+                    ll.addView(twdate);
+                    ll.addView(twcontent);
 
-                    if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_STUDENTS)){
+                    if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.MARK_TEACHES)){
                         ImageButton buttonAbsence = new ImageButton(parent.getContext());
                         buttonAbsence.setImageTintList(ColorStateList.valueOf(Color.BLACK));
                         LinearLayout.LayoutParams layoutParamsInsert = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
                         layoutParamsInsert.setMargins(0,3,0,3);
                         buttonAbsence.setLayoutParams(layoutParamsInsert);
                         buttonAbsence.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_edit_24,null));
-                        buttonAbsence.setOnClickListener(view -> absencebuttonclick(homework));
+                        buttonAbsence.setOnClickListener(view -> editbuttonclick(homework));
                         ll.addView(buttonAbsence);
                     }
                     return ll;
@@ -176,11 +150,18 @@ public class HomeworkFragment extends Fragment implements AsyncResponse {
         this.id_lesson = id_lesson;
     }
 
-    private void absencebuttonclick(Homework homework){
+    private void addbuttonclick(){
         //student has already got an absence
-        //update absence
-//        Homework_dialog dialog = new Homework_dialog(homework,schoolyear,id_lesson,this);
-//        dialog.show(getParentFragmentManager(),null);
+        //create homework
+        Homework_dialog dialog = new Homework_dialog(id_lesson,schoolyear,this);
+        dialog.show(getParentFragmentManager(),null);
+    }
+
+    private void editbuttonclick(Homework homework){
+        //student has already got an absence
+        //update homework
+        Homework_dialog dialog = new Homework_dialog(homework.getId_homework(),id_lesson,homework.getContent(),homework.getDate_due(),schoolyear,this);
+        dialog.show(getParentFragmentManager(),null);
     }
 
     @Override
@@ -194,8 +175,10 @@ public class HomeworkFragment extends Fragment implements AsyncResponse {
                             data.clear();
                             JSONArray json = new JSONArray(response.response);
                             for (int i = 0; i < json.length(); i++) {
-                                Homework homework = Homework.getHomework(json.getJSONObject(i));
-                                data.add(homework);
+                                if (!json.getJSONObject(i).getString("id_homework").equalsIgnoreCase("null")){
+                                    Homework homework = Homework.getHomework(json.getJSONObject(i));
+                                    data.add(homework);
+                                }
                             }
                             adapter.notifyDataSetChanged();
                         } catch (JSONException e) {
