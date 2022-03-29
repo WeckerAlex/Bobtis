@@ -53,9 +53,15 @@ public class TestFragment extends Fragment implements AsyncResponse {
     private EditText eTContent;
     private ImageButton removeButton;
     private ImageButton updateButton;
-    private ImageButton editButton;
     private Test test;
     private boolean editingMode = false;
+    private State currentState;
+    private enum State{
+        TEST_DISPLAY,
+        TEST_EDIT,
+        NO_TEST_DISPLAY,
+        NO_TEST_EDIT
+    }
 
     public TestFragment() {
         // Required empty public constructor
@@ -95,26 +101,60 @@ public class TestFragment extends Fragment implements AsyncResponse {
         eTContent.setEnabled(false);
         removeButton.setOnClickListener(v -> API.removeTest(test.getId_test(),this));
         updateButton.setOnClickListener(v -> {
-            if (editingMode) {
-                setTest();
-            } else {
-                enableEditing(!editingMode);
+            switch (currentState){
+                case TEST_EDIT:
+                case NO_TEST_EDIT:
+                    setTest();
+                    break;
+                case TEST_DISPLAY:
+                    setState(State.TEST_EDIT);
+                    break;
+                case NO_TEST_DISPLAY:
+                    setState(State.NO_TEST_EDIT);
+                    break;
             }
         });
         API.getTest(id_lesson,this);
     }
 
-    private void enableEditing(boolean editable){
-        editingMode = editable;
-        eTTitle.setEnabled(editable);
-        eTContent.setEnabled(editable);
-        if (test == null && editable){
-            eTTitle.setText("");
-            eTContent.setText("");
-            updateButton.setBackgroundResource(R.drawable.ic_baseline_save_24);
-            eTTitle.requestFocus();
-            InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(INPUT_METHOD_SERVICE);
-            manager.showSoftInput(eTTitle, InputMethodManager.SHOW_IMPLICIT);
+    private void setState(State state){
+        currentState = state;
+        switch (state){
+            case TEST_DISPLAY:
+                Log.i("testaddresponse_setState", test.getTitle());
+                Log.i("testaddresponse_setState",test.getContent());
+                eTTitle.setEnabled(false);
+                eTContent.setEnabled(false);
+                eTTitle.setText(test.getTitle());
+                eTContent.setText(test.getContent());
+                updateButton.setBackgroundResource(R.drawable.ic_baseline_edit_24);
+                removeButton.setVisibility(View.VISIBLE);
+                break;
+            case TEST_EDIT:
+                eTTitle.setEnabled(true);
+                eTContent.setEnabled(true);
+                updateButton.setBackgroundResource(R.drawable.ic_baseline_save_24);
+                removeButton.setVisibility(View.VISIBLE);
+                break;
+            case NO_TEST_DISPLAY:
+                eTTitle.setText("no Test");
+                eTContent.setText("no Test");
+                eTTitle.setEnabled(false);
+                eTContent.setEnabled(false);
+                updateButton.setBackgroundResource(R.drawable.ic_baseline_add_circle_outline_24);
+                removeButton.setVisibility(View.INVISIBLE);
+                break;
+            case NO_TEST_EDIT:
+                eTTitle.setText("");
+                eTContent.setText("");
+                eTTitle.setEnabled(true);
+                eTContent.setEnabled(true);
+                removeButton.setVisibility(View.INVISIBLE);
+                updateButton.setBackgroundResource(R.drawable.ic_baseline_save_24);
+                eTTitle.requestFocus();
+                InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(INPUT_METHOD_SERVICE);
+                manager.showSoftInput(eTTitle, InputMethodManager.SHOW_IMPLICIT);
+                break;
         }
     }
 
@@ -126,29 +166,11 @@ public class TestFragment extends Fragment implements AsyncResponse {
             //create the test
             API.addTest(id_lesson,eTContent.getText().toString(),eTTitle.getText().toString(),this);
         }
-        enableEditing(false);
     }
 
 
     public void setData(int id_lesson) {
         this.id_lesson = id_lesson;
-    }
-
-    private void initUI(Test test){
-        if (test != null) {
-            eTTitle.setText(test.getTitle());
-            eTContent.setText(test.getContent());
-            removeButton.setVisibility(View.VISIBLE);
-            updateButton.setVisibility(View.VISIBLE);
-            updateButton.setBackgroundResource(R.drawable.ic_baseline_save_24);
-        }else{
-            eTTitle.setText("no test");
-            eTContent.setText("no test");
-            removeButton.setVisibility(View.INVISIBLE);
-            updateButton.setVisibility(View.VISIBLE);
-
-            updateButton.setBackgroundResource(R.drawable.ic_baseline_add_circle_outline_24);
-        }
     }
 
     @Override
@@ -162,29 +184,29 @@ public class TestFragment extends Fragment implements AsyncResponse {
                         try {
                             JSONObject json = new JSONObject(response.response);
                             test = Test.getTest(json);
+                            setState(State.TEST_DISPLAY);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                         break;
                     }
                     case 404:{
+                        setState(State.NO_TEST_DISPLAY);
                         break;
                     }
                     default:{
                         test = null;
+                        setState(State.NO_TEST_DISPLAY);
                         Toast.makeText(getActivity(),response.response,Toast.LENGTH_LONG).show();
                     }
                 }
-                initUI(test);
                 break;
             case TEST_REMOVE:
                 switch (response.status){
                     case 200:
                         test = null;
-                        initUI(null);
-                        enableEditing(false);
+                        setState(State.NO_TEST_DISPLAY);
                         Toast.makeText(getContext(), "Test removed", Toast.LENGTH_SHORT).show();
-                        updateButton.setBackgroundResource(R.drawable.ic_baseline_add_circle_outline_24);
                         break;
                     default:
                         Toast.makeText(getContext(), response.response, Toast.LENGTH_SHORT).show();
@@ -197,11 +219,11 @@ public class TestFragment extends Fragment implements AsyncResponse {
                         try {
                             JSONObject json = new JSONObject(response.response);
                             test = Test.getTest(json);
+                            setState(State.TEST_DISPLAY);
                         } catch (JSONException e) {
+                            setState(State.NO_TEST_DISPLAY);
                             e.printStackTrace();
                         }
-                        initUI(test);
-                        updateButton.setBackgroundResource(R.drawable.ic_baseline_edit_24);
                         Toast.makeText(getContext(), "Test updated", Toast.LENGTH_SHORT).show();
                         break;
                     default:
@@ -210,7 +232,33 @@ public class TestFragment extends Fragment implements AsyncResponse {
                 }
                 break;
             case TEST_ADD:
-                break;
+                Log.i("testaddresponse", String.valueOf(response.status));
+                Log.i("testaddresponse",response.response);
+                switch (response.status) {
+                    case 200: {
+                        //there was a test
+                        try {
+                            JSONObject json = new JSONObject(response.response);
+                            test = Test.getTest(json);
+                            setState(State.TEST_DISPLAY);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    }
+                    case 400:
+                    case 401:
+                    case 404:
+                        Toast.makeText(getActivity(), response.response, Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        Log.i("testaddresponse_default", String.valueOf(response.status));
+                        Log.i("testaddresponse_default", response.response);
+                        test = null;
+                        setState(State.NO_TEST_DISPLAY);
+                        Toast.makeText(getActivity(), response.response, Toast.LENGTH_LONG).show();
+                        break;
+                }
         }
     }
 }

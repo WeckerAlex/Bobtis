@@ -3,6 +3,7 @@ package lu.btsin.bobtis;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -113,7 +114,14 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                     ll.addView(tw);
                     Button button = new Button(getContext());
                     button.setText("Add to favorites");
+                    button.setOnClickListener(view1 -> {
+                        addEntry(((String[])getDatafiltered().get(position)));
+                        button.setVisibility(View.INVISIBLE);
+                    });
                     ll.addView(button);
+                    if (hasEntry(((String[])getDatafiltered().get(position))[1])){
+                        button.setVisibility(View.INVISIBLE);
+                    }
                     return ll;
                 }
 
@@ -143,7 +151,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         });
         searchedittext.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                dismissKeybord();
+                dismissKeyboard();
                 return true;
             }
             return false;
@@ -164,9 +172,44 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     }
 
     private void buttonclick(ArrayList<String[]> data,View sender){
+        Log.i("Colorswitch",sender.toString());
+        Log.i("Colorswitch",classbutton.toString());
+        Log.i("Colorswitch", String.valueOf((((Button)sender).getId() == classbutton.getId())));
         adapter.setData(data);
         searchedittext.setText("");
         selectedCategory = sender.getId();
+    }
+
+    private void addEntry(String[] data) {
+        switch (selectedCategory){
+            //switch on the currently selected category
+            case R.id.classbutton:{
+                ((MainActivity)getActivity()).addClass(data[0]);
+                break;
+            }
+            case R.id.roombutton:{
+                ((MainActivity)getActivity()).addRoom(data[0]);
+                break;
+            }
+            case R.id.teacherbutton:{
+                ((MainActivity)getActivity()).addTeacher(data);
+                break;
+            }
+        }
+    }
+
+    private boolean hasEntry(String data) {
+        switch (selectedCategory){
+            //switch on the currently selected category
+            case R.id.classbutton:
+                return ((MainActivity)getActivity()).currentUser.hasClass(data);
+            case R.id.roombutton:
+                return ((MainActivity)getActivity()).currentUser.hasRoom(data);
+            case R.id.teacherbutton:
+                return ((MainActivity)getActivity()).currentUser.hasTeacher(data);
+            default:
+                return false;
+        }
     }
 
     /**
@@ -191,7 +234,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         }
     }
 
-    private void dismissKeybord() {
+    private void dismissKeyboard() {
         searchedittext.clearFocus();
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(searchedittext.getWindowToken(), 0);
@@ -212,24 +255,6 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
         }
 
     }
-
-//    private void getTeachers(String schoolyear){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute("teachers",schoolyear);
-//    }
-//
-//    private void getClasses(String schoolyear){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute("classes",schoolyear);
-//    }
-//
-//    private void getRooms(String schoolyear){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute("rooms",schoolyear);
-//    }
 
     @Override
     public void processFinish(ServerResponse response) {

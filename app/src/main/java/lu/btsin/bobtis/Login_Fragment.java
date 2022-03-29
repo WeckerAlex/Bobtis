@@ -127,6 +127,7 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
                     //API.saveloginDataAll(getActivity().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response);
                     User user = new User(getActivity().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response,etpassword.getText().toString());
                     ((MainActivity)getActivity()).currentUser = user;
+                    ((MainActivity)getActivity()).setEnableSearch();
                     ((MainActivity)getActivity()).setNavbarHeader();
                     switch (user.getRole()){
                         case STUDENT:{

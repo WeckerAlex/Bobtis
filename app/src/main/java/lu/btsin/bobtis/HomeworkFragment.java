@@ -127,7 +127,7 @@ public class HomeworkFragment extends Fragment implements AsyncResponse {
                         LinearLayout.LayoutParams layoutParamsInsert = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
                         layoutParamsInsert.setMargins(0,3,0,3);
                         buttonAbsence.setLayoutParams(layoutParamsInsert);
-                        buttonAbsence.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_edit_24,null));
+                        buttonAbsence.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_edit_24_small,null));
                         buttonAbsence.setOnClickListener(view -> editbuttonclick(homework));
                         ll.addView(buttonAbsence);
                     }

@@ -17,33 +17,21 @@
         android:id="@+id/nav_ownAbsences"
         android:title="My Absences"
         />
-    <item
-        android:id="@+id/nav_Manager"
-        android:title="Manage class"
-        />
 
     <item android:title="Class timetables"
-        android:icon="@drawable/ic_baseline_chevron_left_24"
         android:id="@+id/class_timetable">
-        <menu >
-        </menu>
+        <menu/>
     </item>
 
-    <item android:title="Room timetables">
-        <menu android:id="@+id/room_timetables">
-
-        </menu>
+    <item android:title="Room timetables"
+        android:id="@+id/room_timetables">
+        <menu/>
     </item>
 
-    <item android:title="Teacher timetables">
-        <menu android:id="@+id/teacher_timetable">
-
-        </menu>
+    <item android:title="Teacher timetables"
+        android:id="@+id/teacher_timetable">
+        <menu/>
     </item>
-
-    <item
-        android:id="@+id/nav_settings"
-        android:title="Settings" />
 
     <item
         android:id="@+id/nav_login"

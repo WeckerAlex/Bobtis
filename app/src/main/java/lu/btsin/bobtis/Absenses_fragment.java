@@ -139,7 +139,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                     textLayout.addView(tw);
                     textLayout.addView(twdate);
                     ll.addView(textLayout);
-
+                    Log.i("twtesttwtest", String.valueOf(is_allowed_create_absences));
                     if (is_allowed_create_absences){
                         Button buttonVtt = new Button(parent.getContext());
                         LinearLayout.LayoutParams layoutParamsShorten = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
@@ -166,7 +166,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                             tw.setText(ssb);
 
                             buttonVtt.setVisibility(View.VISIBLE);
-                            buttonAbsence.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_edit_24));
+                            buttonAbsence.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_edit_24_small));
                         }else{
                             buttonVtt.setVisibility(View.INVISIBLE);
                             buttonAbsence.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_post_add_24));

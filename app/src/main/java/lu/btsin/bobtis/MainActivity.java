@@ -1,5 +1,6 @@
 package lu.btsin.bobtis;
 
+import android.content.ClipData;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -19,7 +21,9 @@ import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
@@ -28,10 +32,12 @@ public class MainActivity extends AppCompatActivity {
     private Fragment timetableFragment = new Timetable_fragment();
     private Fragment loginFragment = new Login_Fragment();
     private Fragment searchFragment = new Search_Fragment();
-//    private Fragment absensesFragment = new Absenses_fragment();
     private Fragment detailsfragment = new DetailsFragment();
-    //private SharedPreferences prefs;
     public User currentUser;
+    private boolean enableSearch = false;
+    private enum MenuGroup{
+        CLASSES,ROOMS,TEACHERS
+    }
 
 
     @Override
@@ -47,18 +53,7 @@ public class MainActivity extends AppCompatActivity {
         }else{
             Log.i("User_loaded",currentUser.toString());
             //logging in at startup
-            //Todo create ar
-            API.autologin(currentUser,null);
-//            switch (currentUser.getRole()){
-//                case TEACHER:{
-//                    ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.TEACHER,currentUser.getUsername().substring(0,5).toUpperCase());
-//                    break;
-//                }
-//                case STUDENT:{
-//                    ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.STUDENT, String.valueOf(currentUser.getId()));
-//                    break;
-//                }
-//            }
+            API.autologin(currentUser,this);
             //enable the Absences fragment
             ((Timetable_fragment)timetableFragment).setMarkAbsences(currentUser.has_Permission(User.Right.MARK_TEACHES));
         }
@@ -68,9 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (currentUser!=null && (currentUser.has_Permission(User.Right.SCHEDULE_CLASSES) || currentUser.has_Permission(User.Right.SCHEDULE_ROOMS) || currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS))){
-            getMenuInflater().inflate(R.menu.search_menu,menu);
-        }
+        getMenuInflater().inflate(R.menu.search_menu,menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -112,29 +105,30 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("onNavigationItemSelected","nav_homework");
                     break;
                 }
-                case R.id.nav_Manager:{
-                    //Todo show the teachers current lesson absences fragment
-                    //if currentuser is null this menu item is hidden
-//                    Bundle bundle = new Bundle();
-//                    bundle.putInt("id_teacher",currentUser.getId());
-//                    absensesFragment.setArguments(bundle);
-//                    switchFragment(absensesFragment);
-                    break;
-                }
                 case R.id.nav_ownAbsences:{
                     //Todo create own absences fragment
                     Log.i("onNavigationItemSelected","nav_ownAbsences");
                     break;
                 }
-                case R.id.nav_settings:{
-                    Log.i("Settings","drg");
-                    break;
-                }
                 case R.id.nav_login:{
+                    Log.i("Navdraweriteminserttest", String.valueOf(item.getItemId()));
                     switchFragment(loginFragment);
                     break;
                 }
                 default:{
+                    Log.i("Navdraweriteminserttest",item.getTitle().toString());
+                    Log.i("Navdraweriteminserttest", String.valueOf(item.getIcon()));
+                    switch (MenuGroup.values()[item.getGroupId()]){
+                        case CLASSES:
+                            displayClass(item.getTitle().toString());
+                            break;
+                        case ROOMS:
+                            displayRoom(item.getTitle().toString());
+                            break;
+                        case TEACHERS:
+                            displayTeacher(currentUser.getTeacherShortName(item.getTitle().toString()));
+                            break;
+                    }
                     break;
                 }
             }
@@ -145,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setNavbarHeader(){
-//        if (prefs.contains("firstname") && prefs.contains("name") && prefs.contains("classe") && prefs.contains("username")){
         if (currentUser!= null && currentUser.getFirstname() != null && currentUser.getName()!=null && currentUser.getUsername()!=null){
             TextView nhn = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_name);
             nhn.setText(currentUser.getFirstname()+" "+currentUser.getName());
@@ -174,7 +167,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         //app bar icon is pressed
-        Log.i("navigation?","onOptionsItemSelected");
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }else {
@@ -184,7 +176,9 @@ public class MainActivity extends AppCompatActivity {
                 //in case of search been displayed, go to timetable
                 switchFragment(timetableFragment);
             }else{
-                switchFragment(searchFragment);
+                if (enableSearch){
+                    switchFragment(searchFragment);
+                }
             }
         }
         return super.onOptionsItemSelected(item);
@@ -219,10 +213,69 @@ public class MainActivity extends AppCompatActivity {
 
     public void displayDetails(int lessonId, String schoolyear, boolean allow_Adding_Absences, String className, String branchName, String startTime, String endTime, String date){
         Log.i("Segue","Absences: "+lessonId);
-//        ((Absenses_fragment)absensesFragment).setData(schoolyear,lessonId,allow_Adding_Absences,className,branchName,startTime,endTime,date);
-//        switchFragment(absensesFragment);
         ((DetailsFragment)detailsfragment).setData(schoolyear,lessonId,allow_Adding_Absences,className,branchName,startTime,endTime,date);
         switchFragment(detailsfragment);
+    }
+
+    @Override
+    public void processFinish(ServerResponse response) {
+        //handle login
+        switch (response.status){
+            case 200:
+                currentUser.updateUser(getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response);
+                currentUser.loadClasses(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
+                currentUser.loadRooms(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
+                currentUser.loadTeachers(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
+                setEnableSearch();
+                MenuItem classmenu = navigationView.getMenu().findItem(R.id.class_timetable);
+                MenuItem roommenu = navigationView.getMenu().findItem(R.id.room_timetables);
+                MenuItem teachermenu = navigationView.getMenu().findItem(R.id.teacher_timetable);
+                Log.i("processFinish","processFinish");
+                ArrayList<String> data = currentUser.getClasses();
+                for (String entry : data) {
+                    classmenu.getSubMenu().add(MenuGroup.CLASSES.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_baseline_group_24));
+                }
+                data = currentUser.getRooms();
+                for (String entry : data) {
+                    roommenu.getSubMenu().add(MenuGroup.ROOMS.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_outline_meeting_room_24));
+                }
+                data = currentUser.getTeachers();
+                for (String entry : data) {
+                    teachermenu.getSubMenu().add(MenuGroup.TEACHERS.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_baseline_person_24));
+                }
+                setNavbarHeader();
+                break;
+            case 400:
+            case 404:
+            case 412:
+                Toast.makeText(getApplicationContext(),"Error connecting to server",Toast.LENGTH_LONG);
+                break;
+        }
+    }
+
+    protected void setEnableSearch(){
+        enableSearch = currentUser!=null && (currentUser.has_Permission(User.Right.SCHEDULE_CLASSES) || currentUser.has_Permission(User.Right.SCHEDULE_ROOMS) || currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS));
+    }
+
+    public void addClass(String data) {
+        //TODO:add data to navdrawer
+        currentUser.addClass(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE),data);
+        MenuItem classmenu = navigationView.getMenu().findItem(R.id.class_timetable);
+        classmenu.getSubMenu().add(MenuGroup.CLASSES.ordinal(), Menu.NONE, Menu.NONE, data).setIcon(getDrawable(R.drawable.ic_baseline_group_24));
+    }
+
+    public void addRoom(String data) {
+        //TODO:add data to navdrawer
+        currentUser.addRoom(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE),data);
+        MenuItem roommenu = navigationView.getMenu().findItem(R.id.room_timetables);
+        roommenu.getSubMenu().add(MenuGroup.ROOMS.ordinal(), Menu.NONE, Menu.NONE, data).setIcon(getDrawable(R.drawable.ic_outline_meeting_room_24));
+    }
+
+    public void addTeacher(String[] data) {
+        //TODO:add data to navdrawer
+        currentUser.addTeacher(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE),data);
+        MenuItem teachermenu = navigationView.getMenu().findItem(R.id.teacher_timetable);
+        teachermenu.getSubMenu().add(MenuGroup.TEACHERS.ordinal(), Menu.NONE, Menu.NONE, data[1]).setIcon(getDrawable(R.drawable.ic_baseline_person_24));
     }
 
 }
