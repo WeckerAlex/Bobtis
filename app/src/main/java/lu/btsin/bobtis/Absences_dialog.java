@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -97,17 +96,6 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
     private void initElements(){
         ArrayAdapter aa = new ArrayAdapter(getContext(),android.R.layout.simple_spinner_item, reasons);
         sp.setAdapter(aa);
-        sp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.i("Absences_dialog", String.valueOf(reasons[i].id_reason + " : "+reasons[i].name));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
         for (int i = 0; i < reasons.length; i++) {
             if (reasons[i].id_reason == reasonId){
                 Log.i("Dialoginit", String.valueOf(reasons[i].id_reason));
@@ -139,8 +127,6 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
                     }
                 }
                 break;
-            case ABSENCE_SHORTEN:
-                break;
             case ABSENCE_REMOVE:
                 switch (response.status){
                     case 200:{
@@ -167,7 +153,6 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
             JSONArray json = new JSONArray(response);
             for (int i = 0; i < json.length(); i++) {
                 String data = json.getString(i);
-                String[] entry = new String[2];
                 try {
                     JSONObject jsonelement = new JSONObject(data);
                     arr.add(new Reason(Integer.parseInt(jsonelement.getString("id_areason")),jsonelement.getString("name")));
@@ -181,13 +166,13 @@ public class Absences_dialog extends DialogFragment implements AsyncResponse{
         }
         Reason[] r_arr = new Reason[arr.size()];
         for (int i = 0; i < arr.size(); i++) {
-            r_arr[i] = (Reason) arr.get(i);
+            r_arr[i] = arr.get(i);
         }
         return r_arr;
     }
-    private class Reason{
-        private int id_reason;
-        private String name;
+    private static class Reason{
+        private final int id_reason;
+        private final String name;
 
         public Reason(int id_reason, String name) {
             this.id_reason = id_reason;

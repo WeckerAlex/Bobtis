@@ -13,7 +13,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import java.util.Arrays;
-import java.util.function.UnaryOperator;
 
 public class Homework_dialog extends DialogFragment implements AsyncResponse{
 
@@ -96,11 +95,7 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
             contentET.setText(content);
             dp.updateDate(datearray[0],datearray[1]-1,datearray[2]);
         }
-
         return vw;
-    }
-    private void initElements(){
-        //set dp date
     }
 
     @Override

@@ -145,9 +145,18 @@ class API extends AsyncTask {
                     data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "week=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "id_student=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
                     break;
                 case STUDENTS:
+                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_lesson=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
+                    break;
                 case ABSENCES:
                 case HOMEWORKS:
-                    data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_lesson=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
+                    switch (objects.length){
+                        case 2:
+                            data = "id_student=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
+                            break;
+                        case 3:
+                            data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_lesson=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
+                            break;
+                    }
                     break;
                 case INFO:
                     data = "id_teacher=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_student=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
@@ -310,11 +319,21 @@ class API extends AsyncTask {
         task.delegate = listener;
         task.execute(APIEndpoint.ABSENCES,schoolyear,idLesson);
     }
+    public static void getAbsencesByStudent(int id_student,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.ABSENCES,id_student);
+    }
 //    HOMEWORKS,
     public static void getHomeworks(String schoolyear, int idLesson,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
         task.execute(APIEndpoint.HOMEWORKS,schoolyear,idLesson);
+    }
+    public static void getHomeworksByStudent(int id_student,AsyncResponse listener){
+        API task =  new API();
+        task.delegate = listener;
+        task.execute(APIEndpoint.HOMEWORKS,id_student);
     }
 //    TEST,
     public static void getTest(int idLesson,AsyncResponse listener){

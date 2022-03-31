@@ -20,7 +20,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TableRow;
@@ -43,11 +42,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Timetable_fragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class Timetable_fragment extends Fragment implements AsyncResponse {
     public enum Actions {
         CLASS,
@@ -58,10 +52,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     private static LocalDate currentDate = LocalDate.now();
     private static Calendar calendar;
-    private int hourHeight = 150;
-    private int startHour = 7;
-    private int endHour = 17;
-    private boolean is_allowed_to_mark_absences = false;
+    private final int hourHeight = 150;
+    private final int startHour = 7;
+    private final int endHour = 17;
+    private static boolean extendedViewEnabled = false;
     private Actions currentaction;
     private String requestedData;
     private TextView tv1header;
@@ -77,21 +71,8 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment Timetable_fragment.
-     */
-    public static Timetable_fragment newInstance(boolean is_allowed_to_mark_absences) {
-        Timetable_fragment fragment = new Timetable_fragment();
-        Log.i("currentdate", currentDate.getDayOfWeek().toString()+" newInstance");
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i("creating timetableFragment","onCreate Timetable_fragment");
         super.onCreate(savedInstanceState);
         if (currentDate.getDayOfWeek() == DayOfWeek.SATURDAY || currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
             currentDate = currentDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
@@ -120,15 +101,15 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
         calendar = Calendar.getInstance(Locale.FRANCE);
         calendar.setFirstDayOfWeek(Calendar.MONDAY);
-        Log.i("Calendar","created");
         createButtonListener();
         drawTimetable();
+        Log.i("setExtentedViewO", String.valueOf(extendedViewEnabled));
         updateDate();
     }
 
     private void createButtonListener() {
         int[] ids = {R.id.TLDay1header,R.id.TLDay2header,R.id.TLDay3header,R.id.TLDay4header,R.id.TLDay5header};
-        ((ImageView) getView().findViewById(R.id.buttonNext)).setOnClickListener(view -> {
+        getView().findViewById(R.id.buttonNext).setOnClickListener(view -> {
             if (weekMode){
                 currentDate = currentDate.plusWeeks(1);
                 updateDate();
@@ -142,7 +123,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 switchDisplayedDay(ids[currentDate.getDayOfWeek().getValue()-1]);
             }
         });
-        ((ImageView) getView().findViewById(R.id.buttonPrevious)).setOnClickListener(view -> {
+        getView().findViewById(R.id.buttonPrevious).setOnClickListener(view -> {
             if (weekMode){
                 currentDate = currentDate.minusWeeks(1);
                 updateDate();
@@ -248,37 +229,21 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
             }
         }else{
             //no action is defined
+            Log.i("setExtentedViewU", String.valueOf(extendedViewEnabled));
             User user = ((MainActivity)getActivity()).currentUser;
             if (user != null){
                 switch (user.getRole()){
                     case STUDENT:
-//                        currentaction = Actions.STUDENT;
-//                        requestedData = String.valueOf(user.getId());
-//                        //repeat the request
-//                        updateDate();
-                        ((MainActivity)getActivity()).displayStudent(user.getId());
+                        ((MainActivity)getActivity()).displayStudent(user.getId(), extendedViewEnabled);
                         break;
                     case TEACHER:
-//                        currentaction = Actions.TEACHER;
-//                        requestedData = user.getUsername().substring(0,5);
-//                        //repeat the request
-//                        updateDate();
-                        ((MainActivity)getActivity()).displayTeacher(user.getUsername().substring(0,5).toUpperCase());
+                        ((MainActivity)getActivity()).displayTeacher(user.getUsername().substring(0,5).toUpperCase(), extendedViewEnabled);
                         break;
                     case STAFF:
-                        break;
                     case SEPAS:
                         break;
                 }
             }
-//            if (user != null && user.getClasse() != null){
-//                //if user and classe are defined request the users class (default action)
-//                Log.i("showtimetable",user.getClasse());
-//                currentaction = Actions.STUDENT;
-//                requestedData = String.valueOf(user.getId());
-//                //repeat the request
-//                updateDate();
-//            }
         }
         LocalDate tempdate = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         tv1header.setText(tempdate.getDayOfMonth()+".\n"+ getResources().getString(R.string.Monday));
@@ -295,11 +260,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     private String getSchoolyear(){
         int currentyear = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).getYear();
-        int currentSchoolyear = currentyear;
         if (currentDate.getMonth().getValue()<8){
-            currentSchoolyear--;
+            currentyear--;
         }
-        return currentSchoolyear + "-" + (currentSchoolyear+1);
+        return currentyear + "-" + (currentyear+1);
     }
 
     private int getWeekNumber(){
@@ -311,39 +275,13 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     private String getWeekDescription(){
         Log.i("API",currentDate.toString());
-        String start = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).toString();
-        String end = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).toString();
-        Log.i("API",start+"-"+end);
-        return start+"-"+end;
+        LocalDate start = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate end = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        return start.getDayOfMonth()+"."+start.getMonthValue()+"."+start.getYear()+"-"+end.getDayOfMonth()+"."+end.getMonthValue()+"."+end.getYear();
     }
-
-//    protected void getClass(String schoolyear, int week, String requestedclass){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute("class",schoolyear,week,requestedclass);
-//    }
-//
-//    protected void getRoom(String schoolyear, int week, String room){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute("room",schoolyear,week,room);
-//    }
-//
-//    protected void getTeacher(String schoolyear, int week, String teacher){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute("teacher",schoolyear,week,teacher);
-//    }
-//
-//    protected void getStudent(String schoolyear, int week, String id){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute("student",schoolyear,week,id);
-//    }
 
     @Override
     public void processFinish(ServerResponse response) {
-        Log.i("currentdate", currentDate.getDayOfWeek().toString() + " processFinish");
         switch (response.endpoint){
             case TEACHER:
             case ROOM:
@@ -358,7 +296,11 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
+    /**
+     * draws the hour labels
+     */
     protected void drawTimetable(){
+        //draw the time labels
         LinearLayout legend = getView().findViewById(R.id.legend);
         for (int i = startHour;i<endHour;i++){
             TextView tw = new TextView(getContext());
@@ -418,21 +360,13 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                         extensions.remove(((JSONObject)concurrentarray.get(lessoncount)).getString("id_lesson"));
                     }
                     //update hashmap
-                    if (((JSONObject)concurrentarray.get(lessoncount)).getString("fi_parent_lesson") != "null"){
+                    if (!((JSONObject) concurrentarray.get(lessoncount)).getString("fi_parent_lesson").equals("null")){
                         //lesson belongs to other lesson
                         //save it into the extensions
                         extensions.put(((JSONObject)concurrentarray.get(lessoncount)).getString("fi_parent_lesson"),((JSONObject)concurrentarray.get(lessoncount)).getString("end"));
                         //remove the extension so it does not get displayed twice
                         ((JSONObject)concurrentarray.get(lessoncount)).put("hidden",true);
 //                        concurrentarray.remove(lessoncount);
-                    }else {
-                        //lesson has no parent
-                        //draw it
-                        String classe = getStringfromJsonArray(((JSONObject)concurrentarray.get(lessoncount)).getJSONArray("classe"));
-                        String teacher = getStringfromJsonArray(((JSONObject)concurrentarray.get(lessoncount)).getJSONArray("teacher"));
-                        String subject = getStringfromJsonArray(((JSONObject)concurrentarray.get(lessoncount)).getJSONArray("subject"));
-                        String room = getStringfromJsonArray(((JSONObject)concurrentarray.get(lessoncount)).getJSONArray("room"));
-//                        drawEvent2x2(day,schoolclass.getString("begin"),schoolclass.getString("end"), schoolclass.getString("color"), classe, teacher, subject, room);
                     }
                 }
                 //Draw the timeslot
@@ -445,7 +379,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     private void drawTimeslot(JSONArray concurrentarray, int dayIndex) throws JSONException {
-        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
+        LinearLayout parent = getView().findViewById(R.id.timetableLayout);
         FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
         LinearLayout timeslotLayout = new LinearLayout(getContext());
         timeslotLayout.setGravity(Gravity.CLIP_HORIZONTAL);
@@ -488,19 +422,14 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 TableRow.LayoutParams layoutParamsEvent = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, duration);
                 layoutParamsEvent.weight = 1f;
                 mainLayout.setLayoutParams(layoutParamsEvent);
-                Log.i("clicklistener", String.valueOf(is_allowed_to_mark_absences));
-                User user = ((MainActivity)getActivity()).currentUser;
-                if (is_allowed_to_mark_absences || user.has_Permission(User.Right.SCHEDULE_STUDENTS) ){
-                    //user has the permission to insert absences or is permitted to see all the timetables
-                    mainLayout.setOnClickListener(view -> {
-                        try {
-                            ((MainActivity)getActivity()).displayDetails(schoolclass.getInt("id_lesson"),getSchoolyear(),is_allowed_to_mark_absences,classe,subject,schoolclass.getString("begin"),schoolclass.getString("end"),schoolclass.getString("date"));
-                            Log.i("enumerstudent", String.valueOf(schoolclass.getInt("id_lesson")));
-                        } catch (JSONException e) {
-                            Log.e("Event_setListener",schoolclass.toString());
-                        }
-                    });
-                }
+                mainLayout.setOnClickListener(view -> {
+                    try {
+                        ((MainActivity)getActivity()).displayDetails(schoolclass.getInt("id_lesson"),getSchoolyear(), extendedViewEnabled,classe,subject,schoolclass.getString("begin"),schoolclass.getString("end"),schoolclass.getString("date"));
+                        Log.i("enumerstudent", String.valueOf(schoolclass.getInt("id_lesson")));
+                    } catch (JSONException e) {
+                        Log.e("Event_setListener",schoolclass.toString());
+                    }
+                });
                 timeslotLayout.addView(mainLayout);
             }
 
@@ -510,7 +439,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     protected void removeEvents(){
-        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
+        LinearLayout parent = getView().findViewById(R.id.timetableLayout);
         for (int dayIndex = 0; dayIndex<5; dayIndex++){
             FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
             dayLayout.removeAllViews();
@@ -524,12 +453,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     protected LinearLayout drawEvent2x2(String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb,int parentOffset,boolean is_online){
 
-        Log.i("Timeslot", "drawEvent2x2");
         int[] startime = Arrays.stream(startTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int[] endtime = Arrays.stream(endTime.split(":")).mapToInt(Integer::parseInt).toArray();
         int startheight = Math.round((startime[0]-startHour+startime[1]/60f)*hourHeight);
         int duration = Math.round((Math.min(endtime[0],endHour)+endtime[1]/60f)*hourHeight)-Math.round((startime[0]+startime[1]/60f)*hourHeight);
-        //the layout on which you are working
 
         //create new entry
         LinearLayout mainLayout = new LinearLayout(getContext());
@@ -546,17 +473,13 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         ln1.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT,1f));
         ln1.setOrientation(LinearLayout.VERTICAL);
 
-//        ln1.addView(createTextView(classText));
-//        ln1.addView(createTextView(branchName));
-        ln1.addView(createTextView(classText, (int) Math.ceil(classText.split("/", -1).length/2f),false));
+        ln1.addView(createTextView(classText, (int) Math.ceil(classText.split("/", -1).length/2f),is_online));
         ln1.addView(createTextView(branchName, (int) Math.ceil(branchName.split("/", -1).length/2f),false));
 
         LinearLayout ln2 = new LinearLayout(getContext());
         ln2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.MATCH_PARENT,1f));
         ln2.setOrientation(LinearLayout.VERTICAL);
 
-//        ln2.addView(createTextView(teacherAbb));
-//        ln2.addView(createTextView(roomAbb));
         ln2.addView(createTextView(teacherAbb, (int) Math.ceil(teacherAbb.split("/", -1).length/2f),false));
         ln2.addView(createTextView(roomAbb, (int) Math.ceil(roomAbb.split("/", -1).length/2f),false));
 
@@ -588,7 +511,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         layoutParams.topMargin = startheight-parentOffset;
         mainLayout.setLayoutParams(layoutParams);
 
-        mainLayout.addView(createTextView(classText, (int) Math.ceil(classText.split("/", -1).length/2f),false));
+        mainLayout.addView(createTextView(classText, (int) Math.ceil(classText.split("/", -1).length/2f),is_online));
         mainLayout.addView(createTextView(branchName, (int) Math.ceil(branchName.split("/", -1).length/2f),false));
         mainLayout.addView(createTextView(teacherAbb, (int) Math.ceil(teacherAbb.split("/", -1).length/2f),false));
         mainLayout.addView(createTextView(roomAbb, (int) Math.ceil(roomAbb.split("/", -1).length/2f),false));
@@ -599,7 +522,7 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     }
 
     protected void drawHolidayEvent(int dayIndex, String color, String name){
-        LinearLayout parent = (LinearLayout) getView().findViewById(R.id.timetableLayout);
+        LinearLayout parent = getView().findViewById(R.id.timetableLayout);
         FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
         int duration = (endHour-startHour)*hourHeight;
 
@@ -634,10 +557,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         dayLayout.addView(mainLayout);
     }
 
-    protected TextView createTextView(String text){
-        return createTextView(text,1,false);
-    }
-
     protected TextView createTextView(String text,int lines,boolean add_camera){
         TextView tw = new TextView(getContext());
         tw.setTextSize(10f);
@@ -652,21 +571,19 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
         Pattern pattern = Pattern.compile("\\*(.*)\\*");
         SpannableStringBuilder ssb = new SpannableStringBuilder( tw.getText() );
-        if( pattern != null ){
-            Matcher matcher = pattern.matcher( tw.getText() );
-            int matchesSoFar = 0;
-            while( matcher.find() )
-            {
-                int start = matcher.start() - (matchesSoFar * 2);
-                int end = matcher.end() - (matchesSoFar * 2);
-                CharacterStyle span0 = new ForegroundColorSpan(getResources().getColor(R.color.strikethrough));
-                StrikethroughSpan span = new StrikethroughSpan();
-                ssb.setSpan( span, start + 1, end - 1, 0 );
-                ssb.setSpan( span0, start + 1, end - 1, 0 );
-                ssb.delete(start, start + 1);
-                ssb.delete(end - 2, end -1);
-                matchesSoFar++;
-            }
+        Matcher matcher = pattern.matcher( tw.getText() );
+        int matchesSoFar = 0;
+        while( matcher.find() )
+        {
+            int start = matcher.start() - (matchesSoFar * 2);
+            int end = matcher.end() - (matchesSoFar * 2);
+            CharacterStyle span0 = new ForegroundColorSpan(getResources().getColor(R.color.strikethrough));
+            StrikethroughSpan span = new StrikethroughSpan();
+            ssb.setSpan( span, start + 1, end - 1, 0 );
+            ssb.setSpan( span0, start + 1, end - 1, 0 );
+            ssb.delete(start, start + 1);
+            ssb.delete(end - 2, end -1);
+            matchesSoFar++;
         }
 
         tw.setText(ssb);
@@ -684,7 +601,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
      */
     private void prossessTimetable(ServerResponse response){
         try {
-            String message;
             Log.i("Login", String.valueOf(response.status));
             switch (response.status){
                 case 200:{
@@ -722,7 +638,8 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     public void setData(Actions action,String data){
         currentaction = action;
         requestedData = data;
-        is_allowed_to_mark_absences = false;
+        Log.i("setExtentedViewD", String.valueOf(extendedViewEnabled));
+        extendedViewEnabled = false;
         try {
             //try to remove all the events from the timetable
             removeEvents();
@@ -747,9 +664,9 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
-    public void setMarkAbsences(boolean is_allowed_to_mark_absences) {
-        Log.i("setMarkAbsences", String.valueOf(is_allowed_to_mark_absences));
-        this.is_allowed_to_mark_absences = is_allowed_to_mark_absences;
+    public void setExtentedView(boolean is_own_Timetable) {
+        Log.i("setExtentedViewS", String.valueOf(is_own_Timetable));
+        this.extendedViewEnabled = is_own_Timetable;
     }
 
 }

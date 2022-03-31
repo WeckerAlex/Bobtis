@@ -13,7 +13,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Info"
+            android:text="@string/info"
             android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:background="?android:attr/selectableItemBackground"
@@ -23,7 +23,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Absences"
+            android:text="@string/"
             android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:background="?android:attr/selectableItemBackground"/>
@@ -32,7 +32,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Homework"
+            android:text="@string/homework"
             android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:background="?android:attr/selectableItemBackground"/>
@@ -41,14 +41,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Tests"
+            android:text="@string/test"
             android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:background="?android:attr/selectableItemBackground"/>
 
     </LinearLayout>
     <androidx.fragment.app.FragmentContainerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/details_container_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

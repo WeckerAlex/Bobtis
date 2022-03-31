@@ -1,12 +1,10 @@
 package lu.btsin.bobtis;
 
-import android.content.ClipData;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,10 +27,12 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     public ActionBarDrawerToggle actionBarDrawerToggle;
     private NavigationView navigationView;
 
-    private Fragment timetableFragment = new Timetable_fragment();
-    private Fragment loginFragment = new Login_Fragment();
-    private Fragment searchFragment = new Search_Fragment();
-    private Fragment detailsfragment = new DetailsFragment();
+    private final Fragment timetableFragment = new Timetable_fragment();
+    private final Fragment loginFragment = new Login_Fragment();
+    private final Fragment searchFragment = new Search_Fragment();
+    private final Fragment detailsfragment = new DetailsFragment();
+    private Fragment myHomeworkfragment;
+    private Fragment myAbsencefragment;
     public User currentUser;
     private boolean enableSearch = false;
     private enum MenuGroup{
@@ -49,13 +49,17 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         Log.i("creating timetableFragment","onCreate");
         if (currentUser == null){
             switchFragment(loginFragment);
-            ((Timetable_fragment)timetableFragment).setMarkAbsences(false);
+            ((Timetable_fragment)timetableFragment).setExtentedView(false);
         }else{
             Log.i("User_loaded",currentUser.toString());
             //logging in at startup
             API.autologin(currentUser,this);
-            //enable the Absences fragment
-            ((Timetable_fragment)timetableFragment).setMarkAbsences(currentUser.has_Permission(User.Right.MARK_TEACHES));
+            //set the timetable fragment to display all information if event pressed
+            ((Timetable_fragment)timetableFragment).setExtentedView(true);
+            myHomeworkfragment = new MyHomeworkFragment();
+            ((MyHomeworkFragment)myHomeworkfragment).setData(currentUser.getId());
+            myAbsencefragment = new MyAbsencesFragment();
+            ((MyAbsencesFragment)myAbsencefragment).setData(currentUser.getId());
         }
         initNavbar();
         setNavbarHeader();
@@ -78,36 +82,33 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
 
-        // to make the Navigation drawer icon always appear on the action bar
+        //make the Navigation drawer icon always appear on the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        navigationView = (NavigationView) findViewById(R.id.navView);
+        navigationView = findViewById(R.id.navView);
+        //side menu listener
         navigationView.setNavigationItemSelectedListener(item -> {
-            Log.i("navigation?","onNavigationItemSelected");
-            //TODO: check right to access
             switch (item.getItemId()){
                 case R.id.personal_timetable: {
                     switch (currentUser.getRole()){
                         case TEACHER:{
-                            displayTeacher(currentUser.getUsername().substring(0,5).toUpperCase());
+                            displayTeacher(currentUser.getUsername().substring(0,5).toUpperCase(),true);
                             break;
                         }
                         case STUDENT:{
                             if (currentUser.getClasse()!=null){
-                                displayClass(currentUser.getClasse());
+                                displayStudent(currentUser.getId(),true);
                             }
                         }
-                    };
-
+                    }
                     break;
                 }
                 case R.id.nav_homework:{
-                    Log.i("onNavigationItemSelected","nav_homework");
+                    switchFragment(myHomeworkfragment);
                     break;
                 }
                 case R.id.nav_ownAbsences:{
-                    //Todo create own absences fragment
-                    Log.i("onNavigationItemSelected","nav_ownAbsences");
+                    switchFragment(myAbsencefragment);
                     break;
                 }
                 case R.id.nav_login:{
@@ -126,18 +127,20 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                             displayRoom(item.getTitle().toString());
                             break;
                         case TEACHERS:
-                            displayTeacher(currentUser.getTeacherShortName(item.getTitle().toString()));
+                            displayTeacher(currentUser.getTeacherShortName(item.getTitle().toString()),false);
                             break;
                     }
                     break;
                 }
             }
-            DrawerLayout dl = findViewById(R.id.my_drawer_layout);
-            dl.closeDrawer(GravityCompat.START);
+            drawerLayout.closeDrawer(GravityCompat.START);
             return false;
         });
     }
 
+    /**
+     * set the menu header information and enable items
+     */
     public void setNavbarHeader(){
         if (currentUser!= null && currentUser.getFirstname() != null && currentUser.getName()!=null && currentUser.getUsername()!=null){
             TextView nhn = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_name);
@@ -146,6 +149,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             nhc.setText(currentUser.getClasse());
             TextView nhi = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_iam);
             nhi.setText(currentUser.getUsername());
+            if (currentUser.has_Permission(User.Right.SCHEDULE_OWN)){
+                navigationView.getMenu().getItem(0).setVisible(true);
+            }
+            if (currentUser.has_Permission(User.Right.HOMEWORK_OWN)){
+                navigationView.getMenu().getItem(1).setVisible(true);
+            }
+            if (currentUser.has_Permission(User.Right.ABSENCES_OWN)){
+                navigationView.getMenu().getItem(2).setVisible(true);
+            }
         }
     }
 
@@ -157,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 .addToBackStack(null) // name can be null
                 .commit();
     }
-
 
     // override the onOptionsItemSelected()
     // function to implement
@@ -184,36 +195,37 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         return super.onOptionsItemSelected(item);
     }
 
-    public void displayTeacher(String teacher){
-        Log.i("displayTeacher",teacher);
-        boolean is_allowed_to_mark_absences = (currentUser.has_Permission(User.Right.MARK_TEACHES) && currentUser.getUsername().substring(0,5).equalsIgnoreCase(teacher.toUpperCase()));
+    public void displayTeacher(String teacher,boolean extendedView){
+        Log.i("displayTeacher",teacher+" "+extendedView);
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.TEACHER, teacher);
-        ((Timetable_fragment)timetableFragment).setMarkAbsences(is_allowed_to_mark_absences);
-        Log.i("clicklistener_displayTeacher", String.valueOf(is_allowed_to_mark_absences));
+        ((Timetable_fragment)timetableFragment).setExtentedView(extendedView);
         switchFragment(timetableFragment);
     }
 
     public void displayRoom(String room){
         Log.i("Segue","Room: "+room);
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.ROOM,room);
+        ((Timetable_fragment)timetableFragment).setExtentedView(false);
         switchFragment(timetableFragment);
     }
 
     public void displayClass(String classe){
         Log.i("Segue","Class: "+classe);
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.CLASS,classe);
+        ((Timetable_fragment)timetableFragment).setExtentedView(false);
         switchFragment(timetableFragment);
     }
 
-    public void displayStudent(int studentid){
+    public void displayStudent(int studentid,boolean extendedView){
         Log.i("Segue","Student: "+studentid);
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.STUDENT, String.valueOf(studentid));
+        ((Timetable_fragment)timetableFragment).setExtentedView(extendedView);
         switchFragment(timetableFragment);
     }
 
-    public void displayDetails(int lessonId, String schoolyear, boolean allow_Adding_Absences, String className, String branchName, String startTime, String endTime, String date){
+    public void displayDetails(int lessonId, String schoolyear, boolean extendedViewEnabled, String className, String branchName, String startTime, String endTime, String date){
         Log.i("Segue","Absences: "+lessonId);
-        ((DetailsFragment)detailsfragment).setData(schoolyear,lessonId,allow_Adding_Absences,className,branchName,startTime,endTime,date);
+        ((DetailsFragment)detailsfragment).setData(schoolyear,lessonId,extendedViewEnabled,className,branchName,startTime,endTime,date);
         switchFragment(detailsfragment);
     }
 
@@ -223,34 +235,52 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         switch (response.status){
             case 200:
                 currentUser.updateUser(getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response);
-                currentUser.loadClasses(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
-                currentUser.loadRooms(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
-                currentUser.loadTeachers(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
+                loadPreferences();
                 setEnableSearch();
-                MenuItem classmenu = navigationView.getMenu().findItem(R.id.class_timetable);
-                MenuItem roommenu = navigationView.getMenu().findItem(R.id.room_timetables);
-                MenuItem teachermenu = navigationView.getMenu().findItem(R.id.teacher_timetable);
-                Log.i("processFinish","processFinish");
-                ArrayList<String> data = currentUser.getClasses();
-                for (String entry : data) {
-                    classmenu.getSubMenu().add(MenuGroup.CLASSES.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_baseline_group_24));
-                }
-                data = currentUser.getRooms();
-                for (String entry : data) {
-                    roommenu.getSubMenu().add(MenuGroup.ROOMS.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_outline_meeting_room_24));
-                }
-                data = currentUser.getTeachers();
-                for (String entry : data) {
-                    teachermenu.getSubMenu().add(MenuGroup.TEACHERS.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_baseline_person_24));
-                }
+                setLinks();
                 setNavbarHeader();
                 break;
             case 400:
             case 404:
-            case 412:
-                Toast.makeText(getApplicationContext(),"Error connecting to server",Toast.LENGTH_LONG);
+            case 412:{
+                Toast.makeText(getApplicationContext(),"Please log in again",Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 500:
+                Toast.makeText(getApplicationContext(),"Error connecting to server",Toast.LENGTH_LONG).show();
                 break;
         }
+    }
+
+    protected void loadPreferences(){
+        currentUser.loadClasses(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
+        currentUser.loadRooms(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
+        currentUser.loadTeachers(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
+    }
+
+    protected void setLinks(){
+        MenuItem classmenu = navigationView.getMenu().findItem(R.id.class_timetable);
+        MenuItem roommenu = navigationView.getMenu().findItem(R.id.room_timetables);
+        MenuItem teachermenu = navigationView.getMenu().findItem(R.id.teacher_timetable);
+        classmenu.getSubMenu().clear();
+        roommenu.getSubMenu().clear();
+        teachermenu.getSubMenu().clear();
+        ArrayList<String> data = currentUser.getClasses();
+        for (String entry : data) {
+            classmenu.getSubMenu().add(MenuGroup.CLASSES.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_baseline_group_24));
+        }
+        data = currentUser.getRooms();
+        for (String entry : data) {
+            roommenu.getSubMenu().add(MenuGroup.ROOMS.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_outline_meeting_room_24));
+        }
+        data = currentUser.getTeachers();
+        for (String entry : data) {
+            teachermenu.getSubMenu().add(MenuGroup.TEACHERS.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_baseline_person_24));
+        }
+        myHomeworkfragment = new MyHomeworkFragment();
+        ((MyHomeworkFragment)myHomeworkfragment).setData(currentUser.getId());
+        myAbsencefragment = new MyAbsencesFragment();
+        ((MyAbsencesFragment)myAbsencefragment).setData(currentUser.getId());
     }
 
     protected void setEnableSearch(){

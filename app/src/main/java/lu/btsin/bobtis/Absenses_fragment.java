@@ -33,39 +33,16 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Absenses_fragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class Absenses_fragment extends Fragment implements AsyncResponse {
 
     private ArrayList<Student> data = new ArrayList<>();
     private static ListAdapter adapter;
-    private boolean is_allowed_create_absences;
+    private static boolean is_allowed_create_absences;
     private String schoolyear;
     private int id_lesson;
 
     public Absenses_fragment() {
         // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param lessonId Parameter 1.
-     * @param schoolyear
-     * @return A new instance of fragment PopupFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Absenses_fragment newInstance(int lessonId, String schoolyear) {
-//        Bundle bundle = new Bundle();
-//        bundle.putInt("id_lesson",lessonId);
-//        bundle.putString("schoolyear",schoolyear);
-        Absenses_fragment fragment = new Absenses_fragment();
-//        fragment.setArguments(bundle);
-        return fragment;
     }
 
     @Override
@@ -90,6 +67,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
     }
 
     public void init(){
+        Log.i("DetailsonViewCreated","ABonViewCreated");
         ListView list = getView().findViewById(R.id.studentList);
         Log.i("enumerstudent_init_view", "list is null: " +(list==null));
         Log.i("enumerstudent_init_view", "context is null: " +(getContext()==null));
@@ -122,8 +100,6 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                     twdate.setTextSize(13);
                     twdate.setPadding(1,0,1,0);
                     twdate.setLayoutParams(layoutParamsText);
-                    Log.i("twtest",student.getAbsenceEndTime());
-                    Log.i("twtest",student.getAbsenceEndDate());
                     twdate.setText(student.getAbsenceEndDate()+ " " + formathour(student.getAbsenceEndTime()));
 
                     LinearLayout ll = new LinearLayout(parent.getContext());
@@ -139,17 +115,13 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                     textLayout.addView(tw);
                     textLayout.addView(twdate);
                     ll.addView(textLayout);
-                    Log.i("twtesttwtest", String.valueOf(is_allowed_create_absences));
                     if (is_allowed_create_absences){
                         Button buttonVtt = new Button(parent.getContext());
                         LinearLayout.LayoutParams layoutParamsShorten = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
                         layoutParamsShorten.setMargins(0,3,0,3);
                         buttonVtt.setLayoutParams(layoutParamsShorten);
-                        buttonVtt.setOnClickListener(view -> {
-                            API.shortenAbsence(student.getAbsenceId(),getParent());
-                        });
-
-                        buttonVtt.setText("VTT");
+                        buttonVtt.setOnClickListener(view -> API.shortenAbsence(student.getAbsenceId(),getParent()));
+                        buttonVtt.setText(getResources().getString(R.string.VTT));
                         ll.addView(buttonVtt);
 
                         ImageButton buttonAbsence = new ImageButton(parent.getContext());
@@ -175,7 +147,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
                         ll.addView(buttonAbsence);
                     }
                     if (((MainActivity)getActivity()).currentUser.has_Permission(User.Right.SCHEDULE_STUDENTS)){
-                        ll.setOnClickListener(view -> ((MainActivity)getActivity()).displayStudent(student.getId()));
+                        ll.setOnClickListener(view -> ((MainActivity)getActivity()).displayStudent(student.getId(),false));
                     }
                     return ll;
                 }
@@ -205,6 +177,7 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
 
     public void setData(String schoolyear,int id_lesson,boolean is_allowed_create_absences) {
 //        API.getStudents(schoolyear, id_lesson,this);
+        Log.i("DetailsonViewCreated","onViewCreatedsD");
         this.schoolyear = schoolyear;
         this.id_lesson = id_lesson;
         this.is_allowed_create_absences = is_allowed_create_absences;
@@ -327,51 +300,4 @@ public class Absenses_fragment extends Fragment implements AsyncResponse {
         }
     }
 
-//    protected void getAbsenceReasons(){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute(AREASONS);
-//    }
-//
-//    protected void getAbsences(String schoolyear, int idLesson){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute(ABSENCES,schoolyear,idLesson);
-//    }
-//
-//    protected void getTeacherTimetable(String schoolyear, int week, String id){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute(TEACHER,schoolyear,week,id);
-//    }
-//
-//    protected void getStudents(String schoolyear, int idLesson){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute(STUDENTS,schoolyear,idLesson);
-//    }
-//
-//    protected void setAbsenceSpeed(int id_lesson, int id_student){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute(ABSENCE_SPEED,id_lesson,id_student);
-//    }
-//
-//    protected void updateAbsence(int id_absence, String acomment, int fi_areason,String endTime){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute(ABSENCE_UPDATE,id_absence,acomment,fi_areason,endTime);
-//    }
-//
-//    protected void shortenAbsence(int id_absence){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute(ABSENCE_SHORTEN,id_absence);
-//    }
-//
-//    protected void removeAbsence(int id_absence){
-//        API task =  new API();
-//        task.delegate = this;
-//        task.execute(ABSENCE_REMOVE,id_absence);
-//    }
 }

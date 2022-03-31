@@ -19,16 +19,9 @@ public class InfoFragment extends Fragment {
     private String starttime;
     private String endtime;
     private String day;
-    private String schoolyear;
-    private int id_lesson;
 
     public InfoFragment() {
         // Required empty public constructor
-    }
-
-    public static InfoFragment newInstance(String param1, String param2) {
-        InfoFragment fragment = new InfoFragment();
-        return fragment;
     }
 
     @Override
@@ -62,9 +55,7 @@ public class InfoFragment extends Fragment {
         twperiod.setText(starttime + " - " + endtime);
     }
 
-    public void setData(String schoolyear,int id_lesson,boolean is_allowed_create_absences,String classname,String branchname,String starttime,String endtime,String date) {
-        this.schoolyear = schoolyear;
-        this.id_lesson = id_lesson;
+    public void setData(String classname,String branchname,String starttime,String endtime,String date) {
         this.classname = classname;
         this.branchname = branchname;
         this.starttime = starttime;

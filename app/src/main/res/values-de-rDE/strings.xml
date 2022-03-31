@@ -12,4 +12,25 @@
     <string name="Branch">Fach</string>
     <string name="Period">Zeitraum</string>
     <string name="Day">Tag</string>
+    <string name="homework">Hausaufgaben</string>
+    <string name="Absences">Abwesenheiten</string>
+    <string name="noTest">keine Prüfung</string>
+    <string name="comment">Kommentar</string>
+    <string name="endHour">End/nZeit</string>
+    <string name="reason">Grund</string>
+    <string name="content">Inhalt</string>
+    <string name="info">Info</string>
+    <string name="test">Prüfung</string>
+    <string name="Add">Hinzufügen</string>
+    <string name="password">Passwort</string>
+    <string name="title">Titel</string>
+    <string name="back">Zurück</string>
+    <string name="next">Danach</string>
+    <string name="timetable">Zeitplan</string>
+    <string name="my_timetable">Mein Stundenplan</string>
+    <string name="my_homework">Meine Hausaufgaben</string>
+    <string name="my_Absences">Meine Abwesenheiten</string>
+    <string name="class_timtables">Stundenpläne</string>
+    <string name="room_Timetables">Raumstundenpläne</string>
+    <string name="teacher_Timetables">Lehrerstundenpläne</string>
 </resources>

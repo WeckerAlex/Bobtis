@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="Monday">lundi</string>
+    <string name="Tuesday">mardi</string>
+    <string name="Wednesday">mercredi</string>
+    <string name="Friday">vendredi</string>
+    <string name="Thursday">jeudi</string>
+    <string name="Teacher">professeur</string>
+    <string name="Class">classe</string>
+    <string name="Room">salle</string>
+    <string name="Apply">"Appliquer "</string>
+    <string name="Branch">Branche</string>
+    <string name="Period">periode</string>
+    <string name="Day">jour</string>
+    <string name="homework">devoirs</string>
+    <string name="Absences">absences</string>
+    <string name="noTest">aucun test</string>
+    <string name="comment">commentaire</string>
+    <string name="endHour">"Heure/n de fin "</string>
+    <string name="reason">Raison</string>
+    <string name="content">contenu</string>
+    <string name="info">info</string>
+    <string name="test">test</string>
+    <string name="Add">Ajouter</string>
+    <string name="password">Mot de passe</string>
+    <string name="title">titre</string>
+    <string name="back">retour</string>
+    <string name="next">suivant</string>
+    <string name="timetable">Calendrier</string>
+    <string name="my_timetable">Mes horaires</string>
+    <string name="my_homework">Mes devoirs</string>
+    <string name="my_Absences">Mes absences</string>
+    <string name="class_timtables">Horaires des classes</string>
+    <string name="room_Timetables">Horaires des salles</string>
+    <string name="teacher_Timetables">Horaires des professeurs</string>
+</resources>

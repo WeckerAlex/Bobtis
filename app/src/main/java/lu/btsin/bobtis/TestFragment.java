@@ -1,61 +1,35 @@
 package lu.btsin.bobtis;
 
 import static android.content.Context.INPUT_METHOD_SERVICE;
-import static androidx.core.content.ContextCompat.getDrawable;
-import static androidx.core.content.ContextCompat.getSystemService;
 
-import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
-import android.text.SpannableStringBuilder;
-import android.text.style.CharacterStyle;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.StrikethroughSpan;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TableRow;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link TestFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class TestFragment extends Fragment implements AsyncResponse {
 
-    private boolean is_allowed_create_absences;
     private int id_lesson;
     private EditText eTTitle;
     private EditText eTContent;
     private ImageButton removeButton;
     private ImageButton updateButton;
     private Test test;
-    private boolean editingMode = false;
     private State currentState;
+    private static boolean editing_allowed;
+
     private enum State{
         TEST_DISPLAY,
         TEST_EDIT,
@@ -65,18 +39,6 @@ public class TestFragment extends Fragment implements AsyncResponse {
 
     public TestFragment() {
         // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment TestFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static TestFragment newInstance(String param1, String param2) {
-        TestFragment fragment = new TestFragment();
-        return fragment;
     }
 
     @Override
@@ -99,6 +61,10 @@ public class TestFragment extends Fragment implements AsyncResponse {
         updateButton = getView().findViewById(R.id.addUpdateTestButton);
         eTTitle.setEnabled(false);
         eTContent.setEnabled(false);
+        if (!editing_allowed){
+            removeButton.setVisibility(View.INVISIBLE);
+            updateButton.setVisibility(View.INVISIBLE);
+        }
         removeButton.setOnClickListener(v -> API.removeTest(test.getId_test(),this));
         updateButton.setOnClickListener(v -> {
             switch (currentState){
@@ -128,7 +94,9 @@ public class TestFragment extends Fragment implements AsyncResponse {
                 eTTitle.setText(test.getTitle());
                 eTContent.setText(test.getContent());
                 updateButton.setBackgroundResource(R.drawable.ic_baseline_edit_24);
-                removeButton.setVisibility(View.VISIBLE);
+                if (editing_allowed){
+                    removeButton.setVisibility(View.VISIBLE);
+                }
                 break;
             case TEST_EDIT:
                 eTTitle.setEnabled(true);
@@ -137,8 +105,8 @@ public class TestFragment extends Fragment implements AsyncResponse {
                 removeButton.setVisibility(View.VISIBLE);
                 break;
             case NO_TEST_DISPLAY:
-                eTTitle.setText("no Test");
-                eTContent.setText("no Test");
+                eTTitle.setText(getResources().getString(R.string.noTest));
+                eTContent.setText(getResources().getString(R.string.noTest));
                 eTTitle.setEnabled(false);
                 eTContent.setEnabled(false);
                 updateButton.setBackgroundResource(R.drawable.ic_baseline_add_circle_outline_24);
@@ -169,8 +137,9 @@ public class TestFragment extends Fragment implements AsyncResponse {
     }
 
 
-    public void setData(int id_lesson) {
+    public void setData(int id_lesson,boolean editing_allowed) {
         this.id_lesson = id_lesson;
+        this.editing_allowed = editing_allowed;
     }
 
     @Override

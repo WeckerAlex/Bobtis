@@ -1,41 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="HardcodedText">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/personal_timetable"
-        android:title="My timetable"
+        android:visible="false"
+        android:title="@string/my_timetable"
         />
     <item
         android:id="@+id/nav_homework"
-        android:title="My Homework"
+        android:visible="false"
+        android:title="@string/my_homework"
         />
     <item
         android:id="@+id/nav_ownAbsences"
-        android:title="My Absences"
+        android:visible="false"
+        android:title="@string/my_Absences"
         />
 
-    <item android:title="Class timetables"
+    <item android:title="@string/class_timtables"
         android:id="@+id/class_timetable">
         <menu/>
     </item>
 
-    <item android:title="Room timetables"
+    <item android:title="@string/room_Timetables"
         android:id="@+id/room_timetables">
         <menu/>
     </item>
 
-    <item android:title="Teacher timetables"
+    <item android:title="@string/teacher_Timetables"
         android:id="@+id/teacher_timetable">
         <menu/>
     </item>
 
     <item
         android:id="@+id/nav_login"
-        android:title="Login"/>
+        android:title="@string/login"/>
 
 
 </menu>

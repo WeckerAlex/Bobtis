@@ -1,6 +1,4 @@
 <resources>
-    <!--to toggle the open close button
-        of the navigation drawer-->
     <string name="nav_open" translatable="false">Open</string>
     <string name="nav_close" translatable="false">Close</string>
     <string name="title_activity_setting" translatable="false">SettingActivity</string>
@@ -28,6 +26,29 @@
     <string name="Branch">Branch</string>
     <string name="Period">Period</string>
     <string name="Day">Day</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Absences">Absences</string>
+    <string name="VTT" translatable="false">VTT</string>
+    <string name="noTest">no Test</string>
+    <string name="comment">Comment</string>
+    <string name="endHour">End/nhour</string>
+    <string name="reason">Reason</string>
+    <string name="content">Content</string>
+    <string name="info">Info</string>
+    <string name="homework">Homework</string>
+    <string name="test">Test</string>
+    <string name="Add">Add</string>
+    <string name="bobtis_login" translatable="false">Bobtis Login</string>
+    <string name="username" translatable="false">IAm</string>
+    <string name="password">Password</string>
+    <string name="login" translatable="false">Login</string>
+    <string name="title">Title</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+    <string name="timetable">Timetable</string>
+    <string name="my_timetable">My Timetable</string>
+    <string name="my_homework">My Homework</string>
+    <string name="my_Absences">My Absences</string>
+    <string name="class_timtables">Class timetables</string>
+    <string name="room_Timetables">Room timetables</string>
+    <string name="teacher_Timetables">Teacher timetables</string>
 </resources>

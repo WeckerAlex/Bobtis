@@ -216,9 +216,8 @@ public class User {
 
     public boolean has_Permission(Right right){
         //testing override
-        return true;
-        //TODO remove override
-//        return (rights != null && rights.contains(right));
+//        return true;
+        return (rights != null && rights.contains(right));
     }
 
     public void addClass(SharedPreferences userprefs, String data) {
@@ -271,6 +270,7 @@ public class User {
     }
 
     protected void loadClasses(SharedPreferences userprefs){
+        Log.i("Loading","loadClasses");
         String[] temp;
         classes = new ArrayList<>();
         temp = userprefs.getString("classes","").split(",");
@@ -282,6 +282,7 @@ public class User {
     }
 
     protected void loadRooms(SharedPreferences userprefs){
+        Log.i("Loading","loadRooms");
         String[] temp;
         rooms = new ArrayList<>();
         temp = userprefs.getString("rooms","").split(",");
@@ -293,6 +294,7 @@ public class User {
     }
 
     protected void loadTeachers(SharedPreferences userprefs){
+        Log.i("Loading","loadTeachers");
         String[] temp;
         teachers = new HashMap<String,String>();
         temp = userprefs.getString("teachers","").split(",");

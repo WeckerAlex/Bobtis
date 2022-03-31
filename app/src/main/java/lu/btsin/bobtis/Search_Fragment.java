@@ -3,13 +3,7 @@ package lu.btsin.bobtis;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.RippleDrawable;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -27,17 +21,16 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Search_Fragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class Search_Fragment extends Fragment implements AsyncResponse  {
 
     ListView listView;
@@ -48,17 +41,9 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     private static ArrayList<String[]> availableTeachers = new ArrayList<>();
     private static int selectedCategory = R.id.classbutton;
     private static ListAdapter adapter;
-    private Button classbutton;
-    private Button roombutton;
-    private Button teacherbutton;
 
     public Search_Fragment() {
         // Required empty public constructor
-    }
-
-    public static Search_Fragment newInstance(String param1, String param2) {
-        Search_Fragment fragment = new Search_Fragment();
-        return fragment;
     }
 
     @Override
@@ -77,11 +62,11 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initData();
-        searchedittext = (EditText) getView().findViewById(R.id.searchEditText);
-        listView = (ListView) getView().findViewById(R.id.resultsView);
-        classbutton = (Button) getView().findViewById(R.id.classbutton);
-        roombutton = (Button) getView().findViewById(R.id.roombutton);
-        teacherbutton = (Button) getView().findViewById(R.id.teacherbutton);
+        searchedittext = getView().findViewById(R.id.searchEditText);
+        listView = getView().findViewById(R.id.resultsView);
+        Button classbutton = getView().findViewById(R.id.classbutton);
+        Button roombutton = getView().findViewById(R.id.roombutton);
+        Button teacherbutton = getView().findViewById(R.id.teacherbutton);
 
         classbutton.setOnClickListener(v -> buttonclick(availableClasses,v));
         roombutton.setOnClickListener(v -> buttonclick(availableRooms,v));
@@ -99,10 +84,10 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
                     tw.setPadding(1,0,1,0);
                     tw.setLayoutParams(layoutParamsText);
-                    tw.setText(((String[])getDatafiltered().get(position))[1].toString());
+                    tw.setText(((String[])getDatafiltered().get(position))[1]);
 
                     LinearLayout ll = new LinearLayout(getContext());
-                    ll.setOnClickListener(view -> display(((String[])getDatafiltered().get(position))[0].toString()));
+                    ll.setOnClickListener(view -> display(((String[])getDatafiltered().get(position))[0]));
                     ll.setGravity(Gravity.CLIP_HORIZONTAL);
                     ll.setBackgroundResource(R.drawable.coursebackground);
                     ((GradientDrawable) ll.getBackground()).setColor(Color.parseColor("#FFFF99"));
@@ -113,9 +98,9 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                     ll.setOrientation(LinearLayout.HORIZONTAL);
                     ll.addView(tw);
                     Button button = new Button(getContext());
-                    button.setText("Add to favorites");
+                    button.setText(getResources().getString(R.string.Add));
                     button.setOnClickListener(view1 -> {
-                        addEntry(((String[])getDatafiltered().get(position)));
+                        addEntry(getDatafiltered().get(position));
                         button.setVisibility(View.INVISIBLE);
                     });
                     ll.addView(button);
@@ -172,9 +157,6 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
     }
 
     private void buttonclick(ArrayList<String[]> data,View sender){
-        Log.i("Colorswitch",sender.toString());
-        Log.i("Colorswitch",classbutton.toString());
-        Log.i("Colorswitch", String.valueOf((((Button)sender).getId() == classbutton.getId())));
         adapter.setData(data);
         searchedittext.setText("");
         selectedCategory = sender.getId();
@@ -228,7 +210,7 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                 break;
             }
             case R.id.teacherbutton:{
-                ((MainActivity)getActivity()).displayTeacher(data);
+                ((MainActivity)getActivity()).displayTeacher(data,false);
                 break;
             }
         }
