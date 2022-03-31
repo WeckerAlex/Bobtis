@@ -20,6 +20,9 @@ public class InfoFragment extends Fragment {
     private String endtime;
     private String day;
 
+    /**
+     * Constructor
+     */
     public InfoFragment() {
         // Required empty public constructor
     }
@@ -35,16 +38,21 @@ public class InfoFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_info, container, false);
     }
 
+    /**
+     * Initialize the view
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         init();
     }
 
+    /**
+     * Displayes the data
+     */
     public void init(){
-        ListView list = getView().findViewById(R.id.studentList);
-        Log.i("enumerstudent_init_view", "list is null: " +(list==null));
-        Log.i("enumerstudent_init_view", "context is null: " +(getContext()==null));
         TextView twclasse = getView().findViewById(R.id.tv_class);
         TextView twbranch = getView().findViewById(R.id.tv_branch);
         TextView twlesson = getView().findViewById(R.id.tv_lessonDay);
@@ -55,6 +63,14 @@ public class InfoFragment extends Fragment {
         twperiod.setText(starttime + " - " + endtime);
     }
 
+    /**
+     * Sets the data
+     * @param classname The classes name
+     * @param branchname The branch name
+     * @param starttime The start time
+     * @param endtime The end time
+     * @param date The date
+     */
     public void setData(String classname,String branchname,String starttime,String endtime,String date) {
         this.classname = classname;
         this.branchname = branchname;

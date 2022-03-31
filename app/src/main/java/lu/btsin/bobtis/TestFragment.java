@@ -3,7 +3,6 @@ package lu.btsin.bobtis;
 import static android.content.Context.INPUT_METHOD_SERVICE;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +36,9 @@ public class TestFragment extends Fragment implements AsyncResponse {
         NO_TEST_EDIT
     }
 
+    /**
+     * Constructor
+     */
     public TestFragment() {
         // Required empty public constructor
     }
@@ -59,8 +61,10 @@ public class TestFragment extends Fragment implements AsyncResponse {
         eTContent = getView().findViewById(R.id.ETTestContent);
         removeButton = getView().findViewById(R.id.removeTestButton);
         updateButton = getView().findViewById(R.id.addUpdateTestButton);
+        //disable input on creation
         eTTitle.setEnabled(false);
         eTContent.setEnabled(false);
+        //if editing allowed add the buttons
         if (!editing_allowed){
             removeButton.setVisibility(View.INVISIBLE);
             updateButton.setVisibility(View.INVISIBLE);
@@ -70,6 +74,7 @@ public class TestFragment extends Fragment implements AsyncResponse {
             switch (currentState){
                 case TEST_EDIT:
                 case NO_TEST_EDIT:
+                    //save the test
                     setTest();
                     break;
                 case TEST_DISPLAY:
@@ -80,6 +85,7 @@ public class TestFragment extends Fragment implements AsyncResponse {
                     break;
             }
         });
+        //Get the test
         API.getTest(id_lesson,this);
     }
 
@@ -87,45 +93,62 @@ public class TestFragment extends Fragment implements AsyncResponse {
         currentState = state;
         switch (state){
             case TEST_DISPLAY:
-                Log.i("testaddresponse_setState", test.getTitle());
-                Log.i("testaddresponse_setState",test.getContent());
+                //disable editing
                 eTTitle.setEnabled(false);
                 eTContent.setEnabled(false);
+                //set the texts to the tests data
                 eTTitle.setText(test.getTitle());
                 eTContent.setText(test.getContent());
+                //switch button icon
                 updateButton.setBackgroundResource(R.drawable.ic_baseline_edit_24);
                 if (editing_allowed){
                     removeButton.setVisibility(View.VISIBLE);
                 }
                 break;
             case TEST_EDIT:
+                //enable editing
                 eTTitle.setEnabled(true);
                 eTContent.setEnabled(true);
+                //switch button icon
                 updateButton.setBackgroundResource(R.drawable.ic_baseline_save_24);
+                //show the delete button
                 removeButton.setVisibility(View.VISIBLE);
                 break;
             case NO_TEST_DISPLAY:
-                eTTitle.setText(getResources().getString(R.string.noTest));
-                eTContent.setText(getResources().getString(R.string.noTest));
+                //enable editing
                 eTTitle.setEnabled(false);
                 eTContent.setEnabled(false);
+                //set the texts to no data placeholder
+                eTTitle.setText(getResources().getString(R.string.noTest));
+                eTContent.setText(getResources().getString(R.string.noTest));
+                //switch button icon
                 updateButton.setBackgroundResource(R.drawable.ic_baseline_add_circle_outline_24);
+                //hide the delete button
                 removeButton.setVisibility(View.INVISIBLE);
                 break;
             case NO_TEST_EDIT:
-                eTTitle.setText("");
-                eTContent.setText("");
+                //enable editing
                 eTTitle.setEnabled(true);
                 eTContent.setEnabled(true);
+                //wipe displayed text
+                eTTitle.setText("");
+                eTContent.setText("");
+                //hide the delete button
                 removeButton.setVisibility(View.INVISIBLE);
+                //switch button icon
                 updateButton.setBackgroundResource(R.drawable.ic_baseline_save_24);
+                //set the focus on the title input
                 eTTitle.requestFocus();
+                //show the keyboard
                 InputMethodManager manager = (InputMethodManager) getActivity().getSystemService(INPUT_METHOD_SERVICE);
                 manager.showSoftInput(eTTitle, InputMethodManager.SHOW_IMPLICIT);
                 break;
         }
     }
 
+    /**
+     * saves or updates the test depending if the test exists
+     */
     private void setTest() {
         if (test != null) {
             //update the test
@@ -136,7 +159,11 @@ public class TestFragment extends Fragment implements AsyncResponse {
         }
     }
 
-
+    /**
+     * Sets the data
+     * @param id_lesson the lessons id
+     * @param editing_allowed is editing allowed
+     */
     public void setData(int id_lesson,boolean editing_allowed) {
         this.id_lesson = id_lesson;
         this.editing_allowed = editing_allowed;
@@ -146,13 +173,14 @@ public class TestFragment extends Fragment implements AsyncResponse {
     public void processFinish(ServerResponse response) {
         switch (response.endpoint){
             case TEST:
-                Log.i("TEST_fragment","HOMEWORKS");
                 switch (response.status){
                     case 200:{
                         //there was a test
                         try {
                             JSONObject json = new JSONObject(response.response);
                             test = Test.getTest(json);
+                            //there is a test
+                            //display the test
                             setState(State.TEST_DISPLAY);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -160,6 +188,7 @@ public class TestFragment extends Fragment implements AsyncResponse {
                         break;
                     }
                     case 404:{
+                        //there is no test
                         setState(State.NO_TEST_DISPLAY);
                         break;
                     }
@@ -174,6 +203,7 @@ public class TestFragment extends Fragment implements AsyncResponse {
                 switch (response.status){
                     case 200:
                         test = null;
+                        //the test is deleted
                         setState(State.NO_TEST_DISPLAY);
                         Toast.makeText(getContext(), "Test removed", Toast.LENGTH_SHORT).show();
                         break;
@@ -188,8 +218,11 @@ public class TestFragment extends Fragment implements AsyncResponse {
                         try {
                             JSONObject json = new JSONObject(response.response);
                             test = Test.getTest(json);
+                            //the test got updated
+                            //display the test
                             setState(State.TEST_DISPLAY);
                         } catch (JSONException e) {
+                            //set the state to no test display
                             setState(State.NO_TEST_DISPLAY);
                             e.printStackTrace();
                         }
@@ -201,14 +234,14 @@ public class TestFragment extends Fragment implements AsyncResponse {
                 }
                 break;
             case TEST_ADD:
-                Log.i("testaddresponse", String.valueOf(response.status));
-                Log.i("testaddresponse",response.response);
                 switch (response.status) {
                     case 200: {
                         //there was a test
                         try {
                             JSONObject json = new JSONObject(response.response);
                             test = Test.getTest(json);
+                            //the test has been added
+                            //display the test
                             setState(State.TEST_DISPLAY);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -221,9 +254,8 @@ public class TestFragment extends Fragment implements AsyncResponse {
                         Toast.makeText(getActivity(), response.response, Toast.LENGTH_LONG).show();
                         break;
                     default:
-                        Log.i("testaddresponse_default", String.valueOf(response.status));
-                        Log.i("testaddresponse_default", response.response);
                         test = null;
+
                         setState(State.NO_TEST_DISPLAY);
                         Toast.makeText(getActivity(), response.response, Toast.LENGTH_LONG).show();
                         break;

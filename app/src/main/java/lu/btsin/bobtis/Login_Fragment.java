@@ -17,8 +17,11 @@ import androidx.fragment.app.Fragment;
 public class Login_Fragment extends Fragment implements AsyncResponse {
 
     private EditText etUsername;
-    private EditText etpassword;
+    private EditText etPassword;
 
+    /**
+     * Constructor
+     */
     public Login_Fragment() {
         // Required empty public constructor
     }
@@ -40,8 +43,8 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
         super.onViewCreated(view, savedInstanceState);
         Button loginbutton = getView().findViewById(R.id.loginButton);
         etUsername = getView().findViewById(R.id.usernameInput);
-        etpassword = getView().findViewById(R.id.passwordInput);
-        loginbutton.setOnClickListener(v -> login(etUsername.getText().toString(),etpassword.getText().toString()));
+        etPassword = getView().findViewById(R.id.passwordInput);
+        loginbutton.setOnClickListener(v -> login(etUsername.getText().toString(), etPassword.getText().toString()));
     }
 
     /**
@@ -50,8 +53,9 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
      * @param password the password belonging to the username
      */
     protected void login(String username, String password){
+        //disable the input fields
         etUsername.setEnabled(false);
-        etpassword.setEnabled(false);
+        etPassword.setEnabled(false);
         API.login(username,password,this);
     }
 
@@ -76,13 +80,18 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
                 break;
             }
             case 200:{
-                User user = new User(getActivity().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response,etpassword.getText().toString());
+                User user = new User(getActivity().getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response, etPassword.getText().toString());
+                //update the user
                 ((MainActivity)getActivity()).currentUser = user;
-                Log.i("Loading","prossessLogin_Login");
+                //load the new users preferences
                 ((MainActivity)getActivity()).loadPreferences();
+                //enable the search if the user is allowed
                 ((MainActivity)getActivity()).setEnableSearch();
+                //create the Links saved in the preferences and enable the own Absences and own Homework links
                 ((MainActivity)getActivity()).setLinks();
+                //refresh the Navigation header data
                 ((MainActivity)getActivity()).setNavbarHeader();
+                //if the user is a teacher or student display its timetable
                 switch (user.getRole()){
                     case STUDENT:{
                         ((MainActivity)getActivity()).displayStudent(user.getId(),true);
@@ -99,10 +108,11 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
             case 400:
             case 404:
             case 412:{
+                //in case something goes wrong re-enable the fields and wipe the data
                 etUsername.setEnabled(true);
-                etpassword.setEnabled(true);
+                etPassword.setEnabled(true);
                 etUsername.setText("");
-                etpassword.setText("");
+                etPassword.setText("");
                 break;
             }
             default:{
@@ -110,6 +120,6 @@ public class Login_Fragment extends Fragment implements AsyncResponse {
             }
         }
         etUsername.setEnabled(true);
-        etpassword.setEnabled(true);
+        etPassword.setEnabled(true);
     }
 }

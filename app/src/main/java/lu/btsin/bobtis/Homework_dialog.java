@@ -26,9 +26,17 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
     EditText contentET;
     AsyncResponse parent;
 
+    /**
+     * Constructor. Initialises id_homework, lessonId, content, date, schoolyear and the parent
+     * @param id_homework the homeworks id
+     * @param lessonId the lesson's id
+     * @param content the content
+     * @param date the date
+     * @param schoolyear the schoolyear
+     * @param parent the parent fragment
+     */
     public Homework_dialog(int id_homework, int lessonId, String content,String date, String schoolyear, AsyncResponse parent) {
         super();
-        Log.i("lessonIdlessonId", String.valueOf(lessonId));
         this.is_creating = false;
         this.homeworkId = id_homework;
         this.lessonId = lessonId;
@@ -37,6 +45,13 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
         this.parent = parent;
         this.schoolyear = schoolyear;
     }
+
+    /**
+     * Constructor. Only initializes lesson and schoolyear. Used to create a homework
+     * @param lessonId the lesson's id
+     * @param schoolyear the schoolyear
+     * @param parent the parent fragment
+     */
     public Homework_dialog(int lessonId, String schoolyear, AsyncResponse parent) {
         super();
         this.is_creating = true;
@@ -45,19 +60,24 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
         this.schoolyear = schoolyear;
     }
 
+    /**
+     * Creates a new dialog
+     * @param savedInstanceState
+     * @return A new dialog
+     */
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        //Create the dialog content, the buttons and set the action to do nothing
         builder.setTitle("Edit absence")
                 .setView(createView())
                 .setPositiveButton("Save", (dialog, id) -> {})
                 .setNeutralButton("Cancel", (dialog, id) -> {})
                 .setNegativeButton("Delete", (dialog, id) -> {});
-        API.getReasons(this);
         // Create the AlertDialog object and return it
         AlertDialog dialog = builder.create();
         dialog.setOnShowListener(dialogInterface -> {
-            //overwrite default actions
+            //overwrite the default action to prevent automatic dismiss
             Button buttonpositive = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             Button buttonneutral = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
             Button buttonnegative = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
@@ -82,16 +102,18 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
         return dialog;
     }
 
+    /**
+     * Create the view to be displayed in the dialog
+     * @return The view
+     */
     private View createView(){
         View vw = getLayoutInflater().inflate(R.layout.alertdialog_homework,null);
-
         dp = vw.findViewById(R.id.HomeworkDatePicker);
         contentET = vw.findViewById(R.id.TEHomeworkComment);
+        //
         if (!is_creating){
-            Log.i("HWDialog",date);
+            //convert the date to an array of numbers
             int[] datearray = Arrays.stream(date.split("\\.")).mapToInt(Integer::parseInt).toArray();
-            Log.i("HWDialog", String.valueOf(datearray.length));
-
             contentET.setText(content);
             dp.updateDate(datearray[0],datearray[1]-1,datearray[2]);
         }
@@ -106,6 +128,7 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
                     case 200:{
                         Toast.makeText(getContext(), "Homework saved", Toast.LENGTH_SHORT).show();
                         dismiss();
+                        //refresh the list of homeworks
                         API.getHomeworks(schoolyear,lessonId,parent);
                         break;
                     }
@@ -116,6 +139,7 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
                     case 200:{
                         Toast.makeText(getContext(), "Homework updated", Toast.LENGTH_SHORT).show();
                         dismiss();
+                        //refresh the list of homeworks
                         API.getHomeworks(schoolyear,lessonId,parent);
                         break;
                     }
@@ -129,12 +153,11 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
                     case 200:{
                         Toast.makeText(getContext(), "Homework removed", Toast.LENGTH_SHORT).show();
                         dismiss();
+                        //refresh the list of homeworks
                         API.getHomeworks(schoolyear,lessonId,parent);
                         break;
                     }
                     default:{
-                        Log.i("Absences_dialog", String.valueOf(response.status));
-                        Log.i("Absences_dialog", String.valueOf(response.response));
                         Toast.makeText(getContext(), response.status + ": "+ response.response, Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -142,6 +165,10 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
         }
     }
 
+    /**
+     * Gets the data from the datepicker and converts it to a String the Api can understand
+     * @return
+     */
     private String getDate(){
         return dp.getYear()+"."+(dp.getMonth()+1)+"."+dp.getDayOfMonth();
     }

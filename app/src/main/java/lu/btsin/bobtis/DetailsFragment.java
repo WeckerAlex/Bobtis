@@ -33,7 +33,6 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        switchFragment(infofragment);
     }
 
     @Override
@@ -41,6 +40,11 @@ public class DetailsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_details, container, false);
     }
 
+    /**
+     * Sets the navigation button listener, passes data to the fragments and hides navigation items if necessary
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         //details are opened
@@ -56,14 +60,18 @@ public class DetailsFragment extends Fragment {
         testbutton.setOnClickListener(v -> switchFragment(testfragment));
 
         User user = ((MainActivity) getActivity()).currentUser;
-        boolean editing_allowed = (user.has_Permission(User.Right.MARK_TEACHES) && extendedViewEnabled)|| user.has_Permission(User.Right.MARK_CLASSES);
+        //editing is allowed if it is the own timetable and the user has the permission to edit or the user has the permission to edit all absences
+        boolean editing_allowed_absences = (user.has_Permission(User.Right.MARK_TEACHES) && extendedViewEnabled)|| user.has_Permission(User.Right.MARK_CLASSES);
+        //editing is allowed if it is the own timetable and the user has the permission to edit
+        boolean editing_allowed = (user.has_Permission(User.Right.MARK_TEACHES) && extendedViewEnabled);
         infofragment.setData(classname,branchname,starttime,endtime,day);
-        absencesfragment.setData(schoolyear,id_lesson, editing_allowed);
+        absencesfragment.setData(schoolyear,id_lesson, editing_allowed_absences);
         homeworkfragment.setData(schoolyear,id_lesson,editing_allowed);
         testfragment.setData(id_lesson,editing_allowed);
 
         if (!extendedViewEnabled){
             //the lesson is not in the own timetable
+            //disable the navigation to everything the user is not allowed to see
             if (!user.has_Permission(User.Right.ABSENCES_CLASSES)) {
                 absencebutton.setVisibility(View.GONE);
             }
@@ -89,10 +97,21 @@ public class DetailsFragment extends Fragment {
                 .commit();
     }
 
-    public void setData(String schoolyear,int id_lesson,boolean is_allowed_create_absences,String classname,String branchname,String starttime,String endtime,String date) {
+    /**
+     * Initializes the data
+     * @param schoolyear The displayed schoolyear
+     * @param id_lesson The lesson's id
+     * @param extendedViewEnabled does the timetable belong to the user
+     * @param classname the class name
+     * @param branchname the branchname
+     * @param starttime the time the lesson starts
+     * @param endtime the time the lesson ends
+     * @param date the lessons date
+     */
+    public void setData(String schoolyear,int id_lesson,boolean extendedViewEnabled,String classname,String branchname,String starttime,String endtime,String date) {
         this.schoolyear = schoolyear;
         this.id_lesson = id_lesson;
-        this.extendedViewEnabled = is_allowed_create_absences;
+        this.extendedViewEnabled = extendedViewEnabled;
         this.classname = classname;
         this.branchname = branchname;
         this.starttime = starttime;

@@ -9,23 +9,45 @@
     android:orientation="vertical"
     android:background="@color/timetable_background">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_height="wrap_content"
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:textColorHint="@color/listelement"
-        app:hintTextColor="@color/listelement">
-        <EditText
-            android:id="@+id/ETTestTitle"
-            android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_height="wrap_content"
-            android:background="@color/timetable_background"
-            android:layout_margin="5dp"
-            android:textSize="20sp"
-            android:inputType="text"
-            android:lines="1"
-            android:hint="@string/title"
-            android:textCursorDrawable="@color/listelement"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:textColorHint="@color/listelement"
+            app:hintTextColor="@color/listelement">
+            <EditText
+                android:id="@+id/ETTestTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/timetable_background"
+                android:layout_margin="5dp"
+                android:textSize="20sp"
+                android:inputType="text"
+                android:lines="1"
+                android:hint="@string/title"
+                android:textCursorDrawable="@color/listelement"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <ImageButton
+            android:id="@+id/removeTestButton"
+            android:layout_width="wrap_content"
+            android:backgroundTint="@color/design_default_color_error"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            android:background="@drawable/ic_baseline_delete_24"
+            android:layout_margin="15dp" />
+        <ImageButton
+            android:id="@+id/addUpdateTestButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_baseline_add_circle_outline_24"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="15dp" />
+    </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_height="0dp"
@@ -46,27 +68,7 @@
             android:hint="@string/content"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:orientation="horizontal">
-        <ImageButton
-            android:id="@+id/removeTestButton"
-            android:layout_width="wrap_content"
-            android:backgroundTint="@color/design_default_color_error"
-            android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:background="@drawable/ic_baseline_delete_24"
-            android:layout_margin="15dp" />
-        <ImageButton
-            android:id="@+id/addUpdateTestButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_baseline_add_circle_outline_24"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="15dp" />
-    </LinearLayout>
+
 
 
 </LinearLayout>

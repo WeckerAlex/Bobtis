@@ -29,6 +29,9 @@ public class MyHomeworkFragment extends Fragment implements AsyncResponse {
     private static ListAdapter adapter;
     private int idStudent;
 
+    /**
+     * Constructor
+     */
     public MyHomeworkFragment() {
         // Required empty public constructor
     }
@@ -50,6 +53,9 @@ public class MyHomeworkFragment extends Fragment implements AsyncResponse {
         super.onViewCreated(view, savedInstanceState);
     }
 
+    /**
+     * Initializes the list and it's adapter. Retrieves the Homework
+     */
     public void init(){
         ListView list = getView().findViewById(R.id.myHomeworkList);
         if (adapter == null){
@@ -101,6 +107,10 @@ public class MyHomeworkFragment extends Fragment implements AsyncResponse {
         API.getHomeworksByStudent(idStudent,this);
     }
 
+    /**
+     * Sets the student's id
+     * @param idStudent the student's id
+     */
     public void setData(int idStudent) {
         this.idStudent = idStudent;
     }
@@ -109,7 +119,6 @@ public class MyHomeworkFragment extends Fragment implements AsyncResponse {
     public void processFinish(ServerResponse response) {
         switch (response.endpoint){
             case HOMEWORKS:
-                Log.i("HOMEWORKS_fragment",response.response);
                 switch (response.status){
                     case 200:{
                         try {
@@ -118,6 +127,7 @@ public class MyHomeworkFragment extends Fragment implements AsyncResponse {
                             for (int i = 0; i < json.length(); i++) {
                                 if (!json.getJSONObject(i).getString("id_homework").equalsIgnoreCase("null")){
                                     Homework homework = Homework.getHomework(json.getJSONObject(i));
+                                    //add a homework to the arraylist
                                     data.add(homework);
                                 }
                             }

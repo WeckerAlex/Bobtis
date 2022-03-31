@@ -2,7 +2,6 @@ package lu.btsin.bobtis;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -44,14 +43,14 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //prefs = getSharedPreferences("UserPreferences", Context.MODE_PRIVATE);
+        //load the user from SharedPreferences
         currentUser = User.loadUser(getSharedPreferences("UserPreferences", Context.MODE_PRIVATE));
-        Log.i("creating timetableFragment","onCreate");
         if (currentUser == null){
+            //there was no user
+            //switch to login
             switchFragment(loginFragment);
             ((Timetable_fragment)timetableFragment).setExtentedView(false);
         }else{
-            Log.i("User_loaded",currentUser.toString());
             //logging in at startup
             API.autologin(currentUser,this);
             //set the timetable fragment to display all information if event pressed
@@ -90,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         navigationView.setNavigationItemSelectedListener(item -> {
             switch (item.getItemId()){
                 case R.id.personal_timetable: {
+                    //display the users personal timetable
                     switch (currentUser.getRole()){
                         case TEACHER:{
                             displayTeacher(currentUser.getUsername().substring(0,5).toUpperCase(),true);
@@ -104,21 +104,22 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                     break;
                 }
                 case R.id.nav_homework:{
+                    //display the own homework
                     switchFragment(myHomeworkfragment);
                     break;
                 }
                 case R.id.nav_ownAbsences:{
+                    //display the own absences
                     switchFragment(myAbsencefragment);
                     break;
                 }
                 case R.id.nav_login:{
-                    Log.i("Navdraweriteminserttest", String.valueOf(item.getItemId()));
+                    //switch to the login
                     switchFragment(loginFragment);
                     break;
                 }
                 default:{
-                    Log.i("Navdraweriteminserttest",item.getTitle().toString());
-                    Log.i("Navdraweriteminserttest", String.valueOf(item.getIcon()));
+                    //An item from the preferences has been pressed
                     switch (MenuGroup.values()[item.getGroupId()]){
                         case CLASSES:
                             displayClass(item.getTitle().toString());
@@ -143,12 +144,14 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
      */
     public void setNavbarHeader(){
         if (currentUser!= null && currentUser.getFirstname() != null && currentUser.getName()!=null && currentUser.getUsername()!=null){
+            //update the header
             TextView nhn = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_name);
             nhn.setText(currentUser.getFirstname()+" "+currentUser.getName());
             TextView nhc = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_class);
             nhc.setText(currentUser.getClasse());
             TextView nhi = navigationView.getHeaderView(0).findViewById(R.id.navbar_header_iam);
             nhi.setText(currentUser.getUsername());
+            //update the links
             if (currentUser.has_Permission(User.Right.SCHEDULE_OWN)){
                 navigationView.getMenu().getItem(0).setVisible(true);
             }
@@ -161,12 +164,17 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         }
     }
 
+    /**
+     * switches to another fragment
+     * @param fr the fragment to switch to
+     */
     protected void switchFragment(Fragment fr){
         FragmentManager fragmentManager = getSupportFragmentManager();
+        //switch fragment and enable back button functionality
         fragmentManager.beginTransaction()
                 .replace(R.id.fragment_container_view, fr, null)
                 .setReorderingAllowed(true)
-                .addToBackStack(null) // name can be null
+                .addToBackStack(null)
                 .commit();
     }
 
@@ -181,12 +189,13 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }else {
-            //search buttonis pressed.
+            //search button is pressed.
             FragmentContainerView fcv = findViewById(R.id.fragment_container_view);
             if (fcv.getFragment() instanceof Search_Fragment){
                 //in case of search been displayed, go to timetable
                 switchFragment(timetableFragment);
             }else{
+                //only switch if user is allowed to see schedules
                 if (enableSearch){
                     switchFragment(searchFragment);
                 }
@@ -195,36 +204,49 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Displays a teacher timetable
+     * @param teacher the teachers username's first 5 letters
+     * @param extendedView is this the users timetable
+     */
     public void displayTeacher(String teacher,boolean extendedView){
-        Log.i("displayTeacher",teacher+" "+extendedView);
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.TEACHER, teacher);
         ((Timetable_fragment)timetableFragment).setExtentedView(extendedView);
         switchFragment(timetableFragment);
     }
 
+    /**
+     * Displays a teacher timetable
+     * @param room The rooms name
+     */
     public void displayRoom(String room){
-        Log.i("Segue","Room: "+room);
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.ROOM,room);
         ((Timetable_fragment)timetableFragment).setExtentedView(false);
         switchFragment(timetableFragment);
     }
 
+    /**
+     * Displays a teacher timetable
+     * @param classe The class's name
+     */
     public void displayClass(String classe){
-        Log.i("Segue","Class: "+classe);
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.CLASS,classe);
         ((Timetable_fragment)timetableFragment).setExtentedView(false);
         switchFragment(timetableFragment);
     }
 
+    /**
+     * Displays a Students timetable
+     * @param studentid the students id
+     * @param extendedView is this the users timetable
+     */
     public void displayStudent(int studentid,boolean extendedView){
-        Log.i("Segue","Student: "+studentid);
         ((Timetable_fragment)timetableFragment).setData(Timetable_fragment.Actions.STUDENT, String.valueOf(studentid));
         ((Timetable_fragment)timetableFragment).setExtentedView(extendedView);
         switchFragment(timetableFragment);
     }
 
     public void displayDetails(int lessonId, String schoolyear, boolean extendedViewEnabled, String className, String branchName, String startTime, String endTime, String date){
-        Log.i("Segue","Absences: "+lessonId);
         ((DetailsFragment)detailsfragment).setData(schoolyear,lessonId,extendedViewEnabled,className,branchName,startTime,endTime,date);
         switchFragment(detailsfragment);
     }
@@ -234,10 +256,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         //handle login
         switch (response.status){
             case 200:
+                //update the user
                 currentUser.updateUser(getSharedPreferences("UserPreferences", Context.MODE_PRIVATE),response.response);
+                //load the new users preferences
                 loadPreferences();
+                //enable the search if the user is allowed
                 setEnableSearch();
+                //create the Links saved in the preferences and enable the own Absences and own Homework links
                 setLinks();
+                //refresh the Navigation header data
                 setNavbarHeader();
                 break;
             case 400:
@@ -252,19 +279,27 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         }
     }
 
+    /**
+     * Loads the users preferred links
+     */
     protected void loadPreferences(){
         currentUser.loadClasses(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
         currentUser.loadRooms(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
         currentUser.loadTeachers(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE));
     }
 
+    /**
+     * updates the links and sets the own homework and absences links
+     */
     protected void setLinks(){
         MenuItem classmenu = navigationView.getMenu().findItem(R.id.class_timetable);
         MenuItem roommenu = navigationView.getMenu().findItem(R.id.room_timetables);
         MenuItem teachermenu = navigationView.getMenu().findItem(R.id.teacher_timetable);
+        //remove existing links
         classmenu.getSubMenu().clear();
         roommenu.getSubMenu().clear();
         teachermenu.getSubMenu().clear();
+        //fill in the new links
         ArrayList<String> data = currentUser.getClasses();
         for (String entry : data) {
             classmenu.getSubMenu().add(MenuGroup.CLASSES.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_baseline_group_24));
@@ -277,32 +312,45 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         for (String entry : data) {
             teachermenu.getSubMenu().add(MenuGroup.TEACHERS.ordinal(), Menu.NONE, Menu.NONE, entry).setIcon(getDrawable(R.drawable.ic_baseline_person_24));
         }
+        //update the own homework and absences links
         myHomeworkfragment = new MyHomeworkFragment();
         ((MyHomeworkFragment)myHomeworkfragment).setData(currentUser.getId());
         myAbsencefragment = new MyAbsencesFragment();
         ((MyAbsencesFragment)myAbsencefragment).setData(currentUser.getId());
     }
 
+    /**
+     * Sets if the search button should work
+     */
     protected void setEnableSearch(){
         enableSearch = currentUser!=null && (currentUser.has_Permission(User.Right.SCHEDULE_CLASSES) || currentUser.has_Permission(User.Right.SCHEDULE_ROOMS) || currentUser.has_Permission(User.Right.SCHEDULE_TEACHERS));
     }
 
+    /**
+     * adds a Class to the users preferences
+     * @param data the class's name
+     */
     public void addClass(String data) {
-        //TODO:add data to navdrawer
         currentUser.addClass(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE),data);
         MenuItem classmenu = navigationView.getMenu().findItem(R.id.class_timetable);
         classmenu.getSubMenu().add(MenuGroup.CLASSES.ordinal(), Menu.NONE, Menu.NONE, data).setIcon(getDrawable(R.drawable.ic_baseline_group_24));
     }
 
+    /**
+     * adds a room to the users preferences
+     * @param data the room's name
+     */
     public void addRoom(String data) {
-        //TODO:add data to navdrawer
         currentUser.addRoom(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE),data);
         MenuItem roommenu = navigationView.getMenu().findItem(R.id.room_timetables);
         roommenu.getSubMenu().add(MenuGroup.ROOMS.ordinal(), Menu.NONE, Menu.NONE, data).setIcon(getDrawable(R.drawable.ic_outline_meeting_room_24));
     }
 
+    /**
+     * adds a teacher to the users preferences
+     * @param data an Array containing the teachers full name and his username's the first 5 letters
+     */
     public void addTeacher(String[] data) {
-        //TODO:add data to navdrawer
         currentUser.addTeacher(getSharedPreferences(currentUser.getUsername(), Context.MODE_PRIVATE),data);
         MenuItem teachermenu = navigationView.getMenu().findItem(R.id.teacher_timetable);
         teachermenu.getSubMenu().add(MenuGroup.TEACHERS.ordinal(), Menu.NONE, Menu.NONE, data[1]).setIcon(getDrawable(R.drawable.ic_baseline_person_24));

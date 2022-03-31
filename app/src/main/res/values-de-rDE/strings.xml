@@ -2,7 +2,7 @@
 <resources>
     <string name="Monday">Montag</string>
     <string name="Tuesday">Dienstag</string>
-    <string name="Wednesday">Mitwoch</string>
+    <string name="Wednesday">Mittwoch</string>
     <string name="Thursday">Donnerstag</string>
     <string name="Friday">Freitag</string>
     <string name="Teacher">Lehrer</string>

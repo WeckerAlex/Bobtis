@@ -19,7 +19,7 @@ public class Absence {
     }
 
     /**
-     *
+     * Get the Absence in the JSON object
      * @param json JSON containing an absence
      * @return a new Absence
      */
@@ -38,22 +38,42 @@ public class Absence {
         }
     }
 
+    /**
+     * Get the begindate
+     * @return the begindate
+     */
     public String getBeginDate() {
         return beginDate;
     }
 
+    /**
+     * Get the BeginTime
+     * @return the BeginTime
+     */
     public String getBeginTime() {
         return beginTime;
     }
 
+    /**
+     * Get the EndDate
+     * @return the EndDate
+     */
     public String getEndDate() {
         return endDate;
     }
 
+    /**
+     * Get the EndTime
+     * @return the EndTime
+     */
     public String getEndTime() {
         return endTime;
     }
 
+    /**
+     * Get the comment
+     * @return the comment
+     */
     public String getAcomment() {
         return acomment;
     }

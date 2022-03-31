@@ -1,6 +1,5 @@
 package lu.btsin.bobtis;
 
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -9,44 +8,60 @@ import android.widget.Filterable;
 
 import java.util.ArrayList;
 
+/**
+ * A BaseAdapter with abstract getView and filter method
+ * Can be used to display any Object in a List and filter this List
+ * @param <T> An object to be displayed in a list
+ */
 public abstract class ListAdapter<T> extends BaseAdapter implements Filterable {
 
-    private ArrayList<T> data = new ArrayList<T>();
-    private ArrayList<T> datafiltered = new ArrayList<T>();
+    private ArrayList<T> data = new ArrayList<>();
+    private ArrayList<T> dataFiltered = new ArrayList<>();
 
+    /**
+     * Checks if data is set
+     * @return is the data empty
+     */
     public boolean is_data_set(){
         return data.isEmpty();
     }
 
+    /**
+     * Constructor
+     */
     public ListAdapter() {
 
     }
 
-    public ArrayList<T> getDatafiltered() {
-        return datafiltered;
+    /**
+     * Returns the data after it has been filtered
+     * @return an Arraylist of the used Object
+     */
+    public ArrayList<T> getDataFiltered() {
+        return dataFiltered;
     }
 
+    /**
+     * sets the data to be displayed
+     * @param list an Arraylist of objects to display
+     */
     public void setData(ArrayList<T> list) {
-        Log.i("initinit","setData");
         this.data = list;
         getFilter().filter("");
     }
 
     @Override
     public int getCount() {
-        Log.i("initinit","getCount " + datafiltered.size());
-        return datafiltered.size();
+        return dataFiltered.size();
     }
 
     @Override
     public Object getItem(int i) {
-        Log.i("initinit","getItem " + i);
-        return datafiltered.get(i);
+        return dataFiltered.get(i);
     }
 
     @Override
     public long getItemId(int i) {
-        Log.i("initinit","getItemId " + i);
         return i;
     }
 
@@ -66,32 +81,22 @@ public abstract class ListAdapter<T> extends BaseAdapter implements Filterable {
                     results.count = data.size();
                     results.values = data;
                 } else {//do the search
-                    ArrayList<T> resultsData = new ArrayList<T>();
-                    //java.lang.String searchStr = constraint.toString().toUpperCase();
+                    ArrayList<T> resultsData = new ArrayList<>();
                     for (int i = 0; i < data.size(); i++) {
-//                        String entry = data.get(i)[1];
-//                        if (((java.lang.String)entry).toUpperCase().contains(((java.lang.String) constraint).toUpperCase())){
-//                            resultsData.add(data.get(i));
-//                        }
-//                        Log.i("initinit","fintering "+ constraint);
                         if (filterEntry(data.get(i),constraint)){
                             resultsData.add(data.get(i));
-//                            Log.i("initinit","successful "+ constraint);
                         }
                     }
                     results.count = resultsData.size();
                     results.values = resultsData;
-                    Log.i("initinit","end "+ resultsData.size());
                 }
                 return results;
             }
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                datafiltered = (ArrayList<T>) results.values;
-                Log.i("initinit","publishResults "+ results.values.toString());
+                dataFiltered = (ArrayList<T>) results.values;
                 notifyDataSetChanged();
-                Log.i("initinit","publishResultc "+ results.values.toString());
             }
         };
     }

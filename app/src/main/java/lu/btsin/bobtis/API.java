@@ -30,6 +30,9 @@ class API extends AsyncTask {
     public AsyncResponse delegate = null;
     private static CookieManager cookieManager = null;
 
+    /**
+     * The different API endpoints in capital letters and the dot been replaced by underscore
+     */
     public enum APIEndpoint {
         LOGIN,
         SCHOOLYEARS,
@@ -59,12 +62,19 @@ class API extends AsyncTask {
         TEST_UPDATE,
         TESTS;
 
+        /**
+         * Replaces the underscore with a dot and converts it to lowercase
+         * @return The api endpoint string
+         */
         @Override
         public String toString() {
             return super.toString().replace("_",".").toLowerCase();
         }
     }
 
+    /**
+     * Creates an API call and creates the cookie Manager to establish the session
+     */
     public API() {
         super();
         // If the cookiemanager has not been initialized, initialize it
@@ -80,8 +90,8 @@ class API extends AsyncTask {
      * Sends a POST request to the API endpoint
      *
      * @param endpoint the api endpoint
-     * @param data     the additional data
-     * @return The response from the server
+     * @param data     the additional data, already encoded
+     * @return The data from the API as ServerResponse
      */
     private ServerResponse sendApiCall(APIEndpoint endpoint, String data) {
         try {
@@ -93,6 +103,7 @@ class API extends AsyncTask {
             out.writeBytes(data);
             out.flush();
             out.close();
+            //get the html code
             int status = con.getResponseCode();
             InputStreamReader isr = getInputStreamReader(status, con);
             BufferedReader in = new BufferedReader(isr);
@@ -102,16 +113,24 @@ class API extends AsyncTask {
                 content.append(inputLine);
             }
             in.close();
+            //create a ServerResponse object and return it
             return new ServerResponse(endpoint, status, content.toString());
         } catch (Exception e) {
+            //There has been a problem such as no response
             return new ServerResponse(endpoint,0,null);
         }
     }
 
+    /**
+     * Performs a request asynchronously. Called by API().execute()
+     * @param objects An array of objects. The first array element is the API endpoint,the successing elements are data to be passed to the API
+     * @return The data from the API as ServerResponse
+     */
     @Override
     protected Object doInBackground(Object[] objects) {
         APIEndpoint endpoint = APIEndpoint.valueOf(objects[0].toString().replace(".","_").toUpperCase());
         String data = "";
+        //encode the data to be passed to the API
         try {
             switch (endpoint) {
                 case LOGIN: {
@@ -151,9 +170,11 @@ class API extends AsyncTask {
                 case HOMEWORKS:
                     switch (objects.length){
                         case 2:
+                            //objects contains the endpoint and id_student
                             data = "id_student=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
                             break;
                         case 3:
+                            //objects contains the endpoint, schoolyear and id_lesson
                             data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "id_lesson=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
                             break;
                     }
@@ -198,14 +219,17 @@ class API extends AsyncTask {
                 case TESTS:
                     switch (objects.length){
                         case 2:{
+                            //objects contains the endpoint and id_student
                             data = "id_student=" + URLEncoder.encode(objects[1].toString(), "UTF-8");
                             break;
                         }
                         case 3:{
+                            //objects contains the endpoint, schoolyear and class
                             data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "class=" + URLEncoder.encode(objects[2].toString(), "UTF-8");
                             break;
                         }
                         case 4:{
+                            //objects contains the endpoint, schoolyear, class and subject
                             data = "schoolyear=" + URLEncoder.encode(objects[1].toString(), "UTF-8") + "&" + "class=" + URLEncoder.encode(objects[2].toString(), "UTF-8") + "&" + "subject=" + URLEncoder.encode(objects[3].toString(), "UTF-8");
                             break;
                         }
@@ -219,6 +243,10 @@ class API extends AsyncTask {
         return sendApiCall(endpoint, data);
     }
 
+    /**
+     * Sends the data to the delegate
+     * @param sr A ServerResponse Object returned from doInBackground
+     */
     @Override
     protected void onPostExecute(Object sr) {
         super.onPostExecute(sr);
@@ -228,22 +256,34 @@ class API extends AsyncTask {
         }
     }
 
+    /**
+     *
+     * @param status The html status code
+     * @param con The HttpURLConnection
+     * @return An InputStreamReader
+     * @throws IOException
+     */
     private InputStreamReader getInputStreamReader(int status, HttpURLConnection con) throws IOException {
         InputStreamReader isr;
         if (status >= 200 && status < 300) {
             isr = new InputStreamReader(con.getInputStream());
         } else {
-            //400 || 404 || 412
+            //400 || 404 || 412 ...
             isr = new InputStreamReader(con.getErrorStream());
         }
         return isr;
     }
 
-    public static void autologin(User user,AsyncResponse ar) {
+    /**
+     * Logs the user in and sends the response to the listener
+     * @param user The user to be logged in
+     * @param listener The object to send the response to
+     */
+    public static void autologin(User user,AsyncResponse listener) {
         System.out.println("Auto Logging in");
         if (user != null){
             API task = new API();
-            task.delegate = ar;
+            task.delegate = listener;
             task.execute(APIEndpoint.LOGIN, user.getUsername(), user.getPassword());
         }
     }
@@ -261,13 +301,13 @@ class API extends AsyncTask {
     public static void getClasses(String schoolyear,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute("classes",schoolyear);
+        task.execute(APIEndpoint.CLASSES,schoolyear);
     }
 //    ROOMS,
     public static void getRooms(String schoolyear,AsyncResponse listener){
         API task =  new API();
         task.delegate = listener;
-        task.execute("rooms",schoolyear);
+        task.execute(APIEndpoint.ROOMS,schoolyear);
     }
 //    TEACHERS,
     public static void getTeachers(String schoolyear,AsyncResponse listener){

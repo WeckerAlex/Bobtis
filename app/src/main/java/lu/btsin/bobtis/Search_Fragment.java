@@ -84,10 +84,10 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
 
                     tw.setPadding(1,0,1,0);
                     tw.setLayoutParams(layoutParamsText);
-                    tw.setText(((String[])getDatafiltered().get(position))[1]);
+                    tw.setText(((String[]) getDataFiltered().get(position))[1]);
 
                     LinearLayout ll = new LinearLayout(getContext());
-                    ll.setOnClickListener(view -> display(((String[])getDatafiltered().get(position))[0]));
+                    ll.setOnClickListener(view -> display(((String[]) getDataFiltered().get(position))[0]));
                     ll.setGravity(Gravity.CLIP_HORIZONTAL);
                     ll.setBackgroundResource(R.drawable.coursebackground);
                     ((GradientDrawable) ll.getBackground()).setColor(Color.parseColor("#FFFF99"));
@@ -100,11 +100,11 @@ public class Search_Fragment extends Fragment implements AsyncResponse  {
                     Button button = new Button(getContext());
                     button.setText(getResources().getString(R.string.Add));
                     button.setOnClickListener(view1 -> {
-                        addEntry(getDatafiltered().get(position));
+                        addEntry(getDataFiltered().get(position));
                         button.setVisibility(View.INVISIBLE);
                     });
                     ll.addView(button);
-                    if (hasEntry(((String[])getDatafiltered().get(position))[1])){
+                    if (hasEntry(((String[]) getDataFiltered().get(position))[1])){
                         button.setVisibility(View.INVISIBLE);
                     }
                     return ll;

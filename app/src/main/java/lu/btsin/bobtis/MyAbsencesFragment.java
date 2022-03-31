@@ -28,6 +28,9 @@ public class MyAbsencesFragment extends Fragment implements AsyncResponse {
     private static ListAdapter adapter;
     private int idStudent;
 
+    /**
+     * Constructor
+     */
     public MyAbsencesFragment() {
         // Required empty public constructor
     }
@@ -49,6 +52,9 @@ public class MyAbsencesFragment extends Fragment implements AsyncResponse {
         super.onViewCreated(view, savedInstanceState);
     }
 
+    /**
+     * Initializes the list and it's adapter. Retrieves the Absences
+     */
     public void init(){
         ListView list = getView().findViewById(R.id.myHomeworkList);
         if (adapter == null){
@@ -97,9 +103,14 @@ public class MyAbsencesFragment extends Fragment implements AsyncResponse {
         }
         adapter.setData(data);
         list.setAdapter(adapter);
+        //retrieve the users absences
         API.getAbsencesByStudent(idStudent,this);
     }
 
+    /**
+     * Sets the id
+     * @param idStudent the students id
+     */
     public void setData(int idStudent) {
         this.idStudent = idStudent;
     }
@@ -111,11 +122,13 @@ public class MyAbsencesFragment extends Fragment implements AsyncResponse {
                 switch (response.status){
                     case 200:
                         try {
+                            //remove the existing data
                             data.clear();
                             JSONArray json = new JSONArray(response.response);
                             for (int i = 0; i < json.length(); i++) {
                                 if (!json.getJSONObject(i).getString("id_homework").equalsIgnoreCase("null")){
                                     Absence absence = Absence.getAbsence(json.getJSONObject(i));
+                                    //add absence to arraylist
                                     data.add(absence);
                                 }
                             }

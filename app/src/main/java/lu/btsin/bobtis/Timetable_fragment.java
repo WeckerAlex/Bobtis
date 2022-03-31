@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
@@ -67,6 +68,9 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
     private static boolean weekMode = true;
     private static JSONArray timetabledata = null;
 
+    /**
+     * Constructor
+     */
     public Timetable_fragment() {
         // Required empty public constructor
     }
@@ -107,6 +111,9 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         updateDate();
     }
 
+    /**
+     * Set the timetable header button listener
+     */
     private void createButtonListener() {
         int[] ids = {R.id.TLDay1header,R.id.TLDay2header,R.id.TLDay3header,R.id.TLDay4header,R.id.TLDay5header};
         getView().findViewById(R.id.buttonNext).setOnClickListener(view -> {
@@ -143,10 +150,15 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         tv4header.setOnClickListener(view -> toggleDayWeek(view.getId()));
         tv5header.setOnClickListener(view -> toggleDayWeek(view.getId()));
     }
+
+    /**
+     * toggle between day and week view
+     * @param tvId
+     */
     private void toggleDayWeek(int tvId){
         weekMode = !weekMode;
+        //remove all events
         removeEvents();
-        Log.i("toggleDayWeek", String.valueOf(weekMode));
         try {
             //update ui to week mode
             for (int day=0;day< timetabledata.length();day++){
@@ -175,7 +187,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                         break;
                     }
                 }
-                Log.i("toggleDayWeek", String.valueOf(currentDate.getDayOfWeek()));
             }
         }catch (JSONException e){
             e.printStackTrace();
@@ -184,6 +195,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         switchDisplayedDay(tvId);
     }
 
+    /**
+     * show only one day and hide the other days
+     * @param tvId the day to display
+     */
     private void switchDisplayedDay(int tvId){
         FrameLayout DL1 = getView().findViewById(R.id.TLDay1);
         FrameLayout DL2 = getView().findViewById(R.id.TLDay2);
@@ -203,13 +218,14 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         DL5.setVisibility((tvId == R.id.TLDay5header || weekMode) ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * Requests the new data and updates the headers
+     */
     private void updateDate(){
-        Log.i("Calendar","updateDate");
         //remove previously displayed events
         removeEvents();
         //update the week description
         ((TextView)getView().findViewById(R.id.DayTV)).setText(getWeekDescription());
-        Log.i("currentaction", String.valueOf(currentaction));
         //request the new data
         if (currentaction != null){
             //The action is defined
@@ -258,6 +274,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     }
 
+    /**
+     * Gets the current displayed schoolyear
+     * @return the schoolyear
+     */
     private String getSchoolyear(){
         int currentyear = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).getYear();
         if (currentDate.getMonth().getValue()<8){
@@ -266,6 +286,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         return currentyear + "-" + (currentyear+1);
     }
 
+    /**
+     * Gets the current week of the year
+     * @return
+     */
     private int getWeekNumber(){
         //get the date the user wants to be displayed
         calendar.setTime(Date.from(currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
@@ -273,8 +297,11 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         return calendar.get(Calendar.WEEK_OF_YEAR);
     }
 
+    /**
+     * Gets a textual description of the displayed week
+     * @return text describing the selected week
+     */
     private String getWeekDescription(){
-        Log.i("API",currentDate.toString());
         LocalDate start = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate end = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
         return start.getDayOfMonth()+"."+start.getMonthValue()+"."+start.getYear()+"-"+end.getDayOfMonth()+"."+end.getMonthValue()+"."+end.getYear();
@@ -290,7 +317,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
                 break;
             }
             case STUDENT:{
-                Log.i("User",((MainActivity)getActivity()).currentUser.toString());
                 prossessTimetable(response);
             }
         }
@@ -317,8 +343,12 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
+    /**
+     * inserts all event during a single day
+     * @param daylessons a jsonarray containing all lessons
+     * @param day the selected day
+     */
     protected void insertDayEvents(JSONArray daylessons,int day){
-//        System.out.println("insertDayEvents");
         try {
             if (daylessons.length()!=0){
                 //events recieved
@@ -338,11 +368,21 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
+    /**
+     * Inserts holidays to a day
+     * @param info a JsonObject containing holiday information
+     * @param day
+     * @throws JSONException
+     */
     private void insertHoliday(JSONObject info,int day) throws JSONException {
-        Log.i("TAG", "insertHoliday: "+info);
         drawHolidayEvent(day,info.getString("color"),info.getString("name"));
     }
 
+    /**
+     * inserts all school events during a single day
+     * @param daylessons a jsonarray containing all lessons
+     * @param day the selected day
+     */
     private void insertSchooldayEvents(JSONArray daylessons,int day){
         Log.i("TAG", "insertSchooldayEvents: ");
         HashMap<String,String> extensions = new HashMap<>();
@@ -378,6 +418,12 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
+    /**
+     * Draws a timeslot
+     * @param concurrentarray an array contaning one or multiple lessons
+     * @param dayIndex the day
+     * @throws JSONException
+     */
     private void drawTimeslot(JSONArray concurrentarray, int dayIndex) throws JSONException {
         LinearLayout parent = getView().findViewById(R.id.timetableLayout);
         FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
@@ -388,7 +434,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         int maxEndTime = Integer.MIN_VALUE;
         int startheight = 0;
         for (int lessoncount = 0; lessoncount < concurrentarray.length(); lessoncount++){
-            Log.i("Timeslot", String.valueOf(concurrentarray.length()-1));
             //get single classes
             JSONObject schoolclass = new JSONObject(concurrentarray.getString(lessoncount));
             //get the dimensions
@@ -438,6 +483,9 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         dayLayout.addView(timeslotLayout);
     }
 
+    /**
+     * Deletes all events displayed
+     */
     protected void removeEvents(){
         LinearLayout parent = getView().findViewById(R.id.timetableLayout);
         for (int dayIndex = 0; dayIndex<5; dayIndex++){
@@ -447,10 +495,29 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
 
     }
 
+    /**
+     * turns a json array into a string
+     * @param arr a json array
+     * @return the array items concatenated as String
+     * @throws JSONException
+     */
     private String getStringfromJsonArray(JSONArray arr) throws JSONException {
         return arr.join("/").replace("\"","");
     }
 
+    /**
+     * Creates a visual representation of a lesson in 2*2 layout
+     * @param startTime the start time
+     * @param endTime the end time
+     * @param color the color
+     * @param classText the class(es)
+     * @param teacherAbb the teacher(s) abbreviated username(s)
+     * @param branchName the branch(es)
+     * @param roomAbb the room(s)
+     * @param parentOffset the vertical offset
+     * @param is_online is the lesson online
+     * @return the representation of the lesson
+     */
     protected LinearLayout drawEvent2x2(String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb,int parentOffset,boolean is_online){
 
         int[] startime = Arrays.stream(startTime.split(":")).mapToInt(Integer::parseInt).toArray();
@@ -489,6 +556,19 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         return mainLayout;
     }
 
+    /**
+     * Creates a visual representation of a lesson in 1*4 layout
+     * @param startTime the start time
+     * @param endTime the end time
+     * @param color the color
+     * @param classText the class(es)
+     * @param teacherAbb the teacher(s) abbreviated username(s)
+     * @param branchName the branch(es)
+     * @param roomAbb the room(s)
+     * @param parentOffset the vertical offset
+     * @param is_online is the lesson online
+     * @return the representation of the lesson
+     */
     protected LinearLayout drawEvent1x4(String startTime, String endTime, String color, String classText, String teacherAbb, String branchName, String roomAbb,int parentOffset,boolean is_online){
 
         Log.i("Timeslot", "drawEvent1x4");
@@ -521,6 +601,12 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         return mainLayout;
     }
 
+    /**
+     * Draws an holiday event
+     * @param dayIndex the day of the evaênt
+     * @param color the color
+     * @param name the name
+     */
     protected void drawHolidayEvent(int dayIndex, String color, String name){
         LinearLayout parent = getView().findViewById(R.id.timetableLayout);
         FrameLayout dayLayout = (FrameLayout) parent.getChildAt(dayIndex+1);
@@ -557,6 +643,13 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         dayLayout.addView(mainLayout);
     }
 
+    /**
+     * Creates a TextView with the given text
+     * @param text the text to display
+     * @param lines the lines to use
+     * @param add_camera add a camera symbol
+     * @return
+     */
     protected TextView createTextView(String text,int lines,boolean add_camera){
         TextView tw = new TextView(getContext());
         tw.setTextSize(10f);
@@ -568,7 +661,6 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
         tw.setText(text, TextView.BufferType.SPANNABLE);
 //        Spannable spannable = (Spannable) tw.getText();
-
         Pattern pattern = Pattern.compile("\\*(.*)\\*");
         SpannableStringBuilder ssb = new SpannableStringBuilder( tw.getText() );
         Matcher matcher = pattern.matcher( tw.getText() );
@@ -635,6 +727,11 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
+    /**
+     * Sets the data
+     * @param action the requested action
+     * @param data the requested data
+     */
     public void setData(Actions action,String data){
         currentaction = action;
         requestedData = data;
@@ -664,6 +761,10 @@ public class Timetable_fragment extends Fragment implements AsyncResponse {
         }
     }
 
+    /**
+     * Sets if the timetable belongs to the user
+     * @param is_own_Timetable does it belong to the user
+     */
     public void setExtentedView(boolean is_own_Timetable) {
         Log.i("setExtentedViewS", String.valueOf(is_own_Timetable));
         this.extendedViewEnabled = is_own_Timetable;

@@ -16,9 +16,13 @@ public class Homework {
         this.content = content;
     }
 
+    /**
+     * Get the Homework in the JSON object
+     * @param json JSON containing an absence
+     * @return a new Homework
+     */
     public static Homework getHomework(JSONObject json){
         try {
-            //Student st = new Student();
             int id_homework = Integer.parseInt(json.getString("id_homework"));
             String date_due = json.getString("date_due");
             String content = json.getString("content");
@@ -30,14 +34,26 @@ public class Homework {
         }
     }
 
+    /**
+     * Get the homeworks id
+     * @return the id
+     */
     public int getId_homework() {
         return id_homework;
     }
 
+    /**
+     * Get the homeworks due date
+     * @return the due date
+     */
     public String getDate_due() {
         return date_due;
     }
 
+    /**
+     * Get the homeworks content
+     * @return the content
+     */
     public String getContent() {
         return content;
     }
