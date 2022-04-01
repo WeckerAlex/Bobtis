@@ -2,7 +2,6 @@ package lu.btsin.bobtis;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -69,7 +68,7 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         //Create the dialog content, the buttons and set the action to do nothing
-        builder.setTitle("Edit absence")
+        builder.setTitle("Edit homework")
                 .setView(createView())
                 .setPositiveButton("Save", (dialog, id) -> {})
                 .setNeutralButton("Cancel", (dialog, id) -> {})
@@ -84,17 +83,14 @@ public class Homework_dialog extends DialogFragment implements AsyncResponse{
 
             buttonpositive.setOnClickListener(view -> {
                 if (is_creating){
-                    Log.i("HWDialog","addHomework");
                     API.addHomework(lessonId, contentET.getText().toString(), getDate(), this);
                 }else{
-                    Log.i("HWDialog","updateHomework");
                     API.updateHomework(homeworkId, contentET.getText().toString(), getDate(), this);
                 }
             });
             buttonneutral.setOnClickListener(view -> dismiss());
             buttonnegative.setOnClickListener(view -> {
                 if (!is_creating){
-                    Log.i("","API.removeHomework");
                     API.removeHomework(homeworkId, this);
                 }
             });

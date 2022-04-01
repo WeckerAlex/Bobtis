@@ -1,29 +1,31 @@
 package lu.btsin.bobtis;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
 public class User {
 
-
-
+    /**
+     * The users role
+     */
     public enum Role{
         STUDENT,
         TEACHER,
         STAFF,
         SEPAS
     }
+
+    /**
+     * The users rights
+     */
     public enum Right{
         LOGIN,
         SCHEDULE_OWN,
@@ -57,9 +59,15 @@ public class User {
     private ArrayList<String> rooms;
     private HashMap<String,String> teachers;
 
-
+    /**
+     * Constructor. Creates a user using data in a server response
+     * @param prefs The SharedPreferences used to save the user
+     * @param response a string in json format containing a user
+     * @param password the users password
+     */
     public User(SharedPreferences prefs,String response, String password) {
         try {
+            //initialize all variables
             JSONObject json = new JSONObject(response);
             role = Role.valueOf(json.getString("type").toUpperCase());
             name = json.getString("name");
@@ -76,21 +84,25 @@ public class User {
             for (int i = 0; i < jsonclasse.length(); i++) {
                 rights.add(Right.valueOf(jsonclasse.getString(i).replace(".","_").toUpperCase()));
             }
+            //save the user in the SharedPreferences
             saveUser(prefs);
-            Log.i("CurrentUser",this.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
-    
+
+    /**
+     * Creates a user using the data stored in the SharedPreferences
+     * @param prefs the SharedPreferences containing the user
+     */
     private User(SharedPreferences prefs){
+        //initialize all variables
         role = Role.valueOf(prefs.getString("type","").toUpperCase());
         name = prefs.getString("name","");
         firstname = prefs.getString("firstname","");
         username = prefs.getString("username","");
         password = prefs.getString("password","");
         email = prefs.getString("email","");
-        Log.i("User", String.valueOf(prefs.getInt("id",0)));
         id = prefs.getInt("id",0);
         if (role == Role.STUDENT){
             classe = prefs.getString("classe","");
@@ -103,7 +115,7 @@ public class User {
     }
 
     /**
-     * Create a new user out of the stored data
+     * Creates a new user out of the stored data. If there is no user returns null
      * @param prefs the SharedPreferences used to store the user
      */
     public static User loadUser(SharedPreferences prefs) {
@@ -115,6 +127,10 @@ public class User {
         
     }
 
+    /**
+     * Saves the user to the SharedPreferences
+     * @param prefs the SharedPreferences used to store the user
+     */
     public void saveUser(SharedPreferences prefs){
         SharedPreferences.Editor edit = prefs.edit();
         edit.putString("type", role.toString());
@@ -123,7 +139,6 @@ public class User {
         edit.putString("username", username);
         edit.putString("password", password);
         edit.putString("email", email);
-        Log.i("saveUser", String.valueOf(id));
         edit.putInt("id", id);
         if (role == Role.STUDENT){
             edit.putString("classe", classe);
@@ -138,6 +153,11 @@ public class User {
 
     }
 
+    /**
+     * Updates the user stored in the SharedPreferences
+     * @param prefs The SharedPreferences used to save the user
+     * @param response a string in json format containing a user
+     */
     public void updateUser(SharedPreferences prefs,String response){
         try {
             JSONObject json = new JSONObject(response);
@@ -176,50 +196,92 @@ public class User {
                 '}';
     }
 
-
-
+    /**
+     * Gets the users password
+     * @return the password
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Gets the users role
+     * @return the role
+     */
     public Role getRole() {
         return role;
     }
 
+    /**
+     * Gets the users username
+     * @return the username
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Gets the users email
+     * @return the email
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Gets the users name
+     * @return the name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the users firstname
+     * @return the firstname
+     */
     public String getFirstname() {
         return firstname;
     }
 
+    /**
+     * Gets the users id
+     * @return the id
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Gets the users class
+     * @return the class
+     */
     public String getClasse() {
         return classe;
     }
 
+    /**
+     * Gets the users rights
+     * @return the rights
+     */
     public ArrayList<Right> getRights() {
         return rights;
     }
 
+    /**
+     * Checks if a user has a permission
+     * @param right the permission to check
+     * @return
+     */
     public boolean has_Permission(Right right){
-        //testing override
-//        return true;
         return (rights != null && rights.contains(right));
     }
 
+    /**
+     * Adds a class to the user's preferred classes
+     * @param userprefs the specific user's SharedPreferences
+     * @param data the class name to save
+     */
     public void addClass(SharedPreferences userprefs, String data) {
         classes.add(data);
         SharedPreferences.Editor edit = userprefs.edit();
@@ -231,6 +293,11 @@ public class User {
         edit.apply();
     }
 
+    /**
+     * Adds a room to the user's preferred classes
+     * @param userprefs the specific user's SharedPreferences
+     * @param data the room name to save
+     */
     public void addRoom(SharedPreferences userprefs, String data) {
         rooms.add(data);
         SharedPreferences.Editor edit = userprefs.edit();
@@ -242,12 +309,13 @@ public class User {
         edit.apply();
     }
 
+    /**
+     * Adds a teacher to the user's preferred classes
+     * @param userprefs the specific user's SharedPreferences
+     * @param data an array containing the teachers full name and the 5 letter in his username
+     */
     public void addTeacher(SharedPreferences userprefs, String[] data) {
-        Log.i("getTeacherShortName_addTeacher",data[0]+" "+data[1]);
         teachers.put(data[1],data[0]);
-        for (String key:teachers.keySet()) {
-            Log.i("getTeacherShortName_add_enu",key);
-        }
         SharedPreferences.Editor edit = userprefs.edit();
         StringJoiner sj = new StringJoiner(",");
         for (Map.Entry<String, String> entry : teachers.entrySet()) {
@@ -257,20 +325,38 @@ public class User {
         edit.apply();
     }
 
+    /**
+     * Checks if a class is in the user's preferred classes
+     * @param data the class to check
+     * @return is the class in the user favorite classes
+     */
     public boolean hasClass(String data) {
         return classes!=null && classes.contains(data);
     }
 
+    /**
+     * Checks if a room is in the user's preferred rooms
+     * @param data the room to check
+     * @return is the room in the user favorite rooms
+     */
     public boolean hasRoom(String data) {
         return rooms!=null && rooms.contains(data);
     }
 
+    /**
+     * Checks if a teacher is in the user's preferred teacher
+     * @param data the teacher to check
+     * @return is the teacher in the user favorite teachers
+     */
     public boolean hasTeacher(String data) {
         return teachers!=null && teachers.containsKey(data);
     }
 
+    /**
+     * loads the preferred classes from the SharedPreferences
+     * @param userprefs the specific user's SharedPreferences
+     */
     protected void loadClasses(SharedPreferences userprefs){
-        Log.i("Loading","loadClasses");
         String[] temp;
         classes = new ArrayList<>();
         temp = userprefs.getString("classes","").split(",");
@@ -281,8 +367,11 @@ public class User {
         }
     }
 
+    /**
+     * loads the preferred rooms from the SharedPreferences
+     * @param userprefs the specific user's SharedPreferences
+     */
     protected void loadRooms(SharedPreferences userprefs){
-        Log.i("Loading","loadRooms");
         String[] temp;
         rooms = new ArrayList<>();
         temp = userprefs.getString("rooms","").split(",");
@@ -293,8 +382,11 @@ public class User {
         }
     }
 
+    /**
+     * loads the preferred teachers from the SharedPreferences
+     * @param userprefs the specific user's SharedPreferences
+     */
     protected void loadTeachers(SharedPreferences userprefs){
-        Log.i("Loading","loadTeachers");
         String[] temp;
         teachers = new HashMap<String,String>();
         temp = userprefs.getString("teachers","").split(",");
@@ -306,23 +398,35 @@ public class User {
         }
     }
 
+    /**
+     * Retrieves a teacher's 5 first letters of his username
+     * @param teacherFullName the teachers full name
+     * @return the 5 first letters of his username
+     */
     public String getTeacherShortName(String teacherFullName) {
-        Log.i("getTeacherShortName_input",teacherFullName);
-        Log.i("getTeacherShortName_res",teachers.get(teacherFullName)+ " returned");
-        for (String key:teachers.keySet()) {
-            Log.i("getTeacherShortName_enu",key);
-        }
         return teachers.get(teacherFullName);
     }
 
+    /**
+     * Gets the users preferred classes
+     * @return the users preferred classes
+     */
     public ArrayList<String> getClasses() {
         return classes;
     }
 
+    /**
+     * Gets the users preferred rooms
+     * @return the users preferred rooms
+     */
     public ArrayList<String> getRooms() {
         return rooms;
     }
 
+    /**
+     * Gets a list of the user's preferred teacher's full names
+     * @return a list of the user's preferred teacher's full names
+     */
     public ArrayList<String> getTeachers() {
         //retrieve list of full names
         return new ArrayList<>(teachers.keySet()) ;
