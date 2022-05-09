@@ -39,10 +39,7 @@ On this page, you can manage the test during a lesson if you are allowed to. If 
 test, you can add one by pressing +. If there is one you can edit the test by pressing the edit
 button or remove it by pressing on the waste bin
 
-<img src="Readme_Images\LessonDetails.jpg" alt="drawing" width="170px" height="302" />
-<img src="Readme_Images\LessonAbsences.jpg" alt="drawing" width="170px" height="302" />
-<img src="Readme_Images\LessonHomework.jpg" alt="drawing" width="170px" height="302" />
-<img src="Readme_Images\LessonTest.jpg" alt="drawing" width="170px" height="302" />
+<img src="Readme_Images\LessonDetails.jpg" alt="drawing" width="170px" height="302" /> <img src="Readme_Images\LessonAbsences.jpg" alt="drawing" width="170px" height="302" /> <img src="Readme_Images\LessonHomework.jpg" alt="drawing" width="170px" height="302" /> <img src="Readme_Images\LessonTest.jpg" alt="drawing" width="170px" height="302" />
 
 ## Own homework and Absences
 
